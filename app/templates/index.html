@@ -11,10 +11,19 @@
 				bid: $(this).val()
 			}, function(data) {
 				$('#log').html(data.msg);
-				$('#middle_box').html(data.buttons);
+				$('#adv_button_cell') = '<button id="adv_button" type="button">Next</button>';
 			});
 			return false;
 		});
+
+		$('#adv_button_cell').on('click', '#adv_button', function() {
+			$.getJSON($SCRIPT_ROOT + '/do_action', {
+				bot: true
+			}, function(data) {
+				$('#log').html(data.msg);
+				$('#middle_box').html(data.middle);
+			})
+		})
 	});
 </script>
 
@@ -31,6 +40,7 @@
 		</tr>
 		<tr>
 			<td id="middle_box" height="200px">
+				{% if session['active_player'] == 0 %}
 				<table>
 					<tr>
 						<td><button class="bid_button" type="button" value="0">Pass</button></td>
@@ -39,6 +49,7 @@
 						<td><button class="bid_button" type="button" value="4">Bid 4</button></td>
 					</tr>
 				</table>
+				{% endif %}
 			</td>
 		</tr>
 		<tr>
@@ -48,7 +59,18 @@
 			<td id="player_name"><b>Player 1</b></td>
 		</tr>
 		<tr>
-			<td id="log"></td>
+			<td id="log">
+				{% if session['active_player'] != 0 %}
+				<p><b>Player {{ session['active_player']+1 }}</b> bids first.</p>
+				{% endif %}
+			</td>
+		</tr>
+		<tr>
+			<td id="adv_button_cell">
+				{% if session['active_player'] != 0 %}
+				<button id="adv_button" type="button">Next</button>
+				{% endif %}
+			</td>
 		</tr>
 	</table>
 </body>

@@ -49,12 +49,12 @@ def do_action():
 	if session['round'] == -1:
 		# As long as we haven't reached the dealer yet
 		if session['active_player'] != session['dealer']:
-			# Player's input
+			# Player's bid
 			if session['active_player'] == 0:
 				bid = request.args.get('bid', 0, type=int)
-			# Bot's input
+			# Bot's bid
 			else:
-				bid = PB.bid(session)
+				bid = PB.action(session)
 
 			# Not pass
 			if bid != 0:
@@ -66,7 +66,21 @@ def do_action():
 			# Pass
 			else:
 				msg = '<b>Player {}</b> passes the bid.'.format(session['active_player']+1)
+
+			# Prepare for next player
 			next_player(session)
+
+			# Check if dealer's hand is forced
+			if session['active_player'] == session['dealer'] and session['bid'] < 2:
+				session['bid'] = session['min_bid']
+				session['bidder'] = session['active_player']
+
+				msg += '<br><b>Player {}</b> is forced to bid {}.'.format(session['bidder']+1, session['bid'])
+
+				# Prepare for next round
+				session['round'] = 0
+
+			return jsonify(msg=msg, middle='')
 
 			# If player is next
 			if session['active_player'] == 0:
@@ -79,15 +93,7 @@ def do_action():
 							<td><button class="bid_button" type="button" value="4">Bid 4</button></td>
 						</tr>
 					</table>'''
-			return jsonify(msg=msg, buttons=buttons)
-		# No bids, dealer's bid is forced
-		elif session['bid'] < 2:
-			session['bid'] = session['min_bid']
-			session['bidder'] = session['active_player']
-
-			# Prepare for first round
-			session['round'] = 0
-			return jsonify(msg='<b>Player {}</b> is forced to bid {}.'.format(session['bidder']+1, session['bid']), buttons='')
+			return jsonify(msg=msg, middle=buttons)
 		# If others have bid, dealer can still match or pass
 		else:
 			# Human
@@ -101,7 +107,7 @@ def do_action():
 			if bid == 0:
 				# Prepare for first round
 				session['round'] = 0
-				return jsonify(msg='<b>Player {}</b> passes.'.format(session['active_player']+1), buttons='')
+				return jsonify(msg='<b>Player {}</b> passes.'.format(session['active_player']+1), middle='')
 			# Dealer matches
 			else:
 				msg = '<b>Player {}</b> matches <b>Player {}</b>\'s bid of {}.'.format(session['active_player']+1,
@@ -110,7 +116,7 @@ def do_action():
 				session['bidder'] = session['active_player']
 				#Prepare for first round
 				session['round'] = 0
-				return jsonify(msg=msg, buttons='')
+				return jsonify(msg=msg, middle='')
 	# Regular rounds
 	# else:
 		# First round
