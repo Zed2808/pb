@@ -4,15 +4,14 @@
 
 <script type=text/javascript>
 	$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
-</script>
 
-<script type=text/javascript>
-	$(function() {
-		$('.bid_button').bind('click', function() {
-			$.getJSON($SCRIPT_ROOT + '/bid', {
+	$(document).ready(function() {
+		$('#body_table').on('click', '.bid_button', function() {
+			$.getJSON($SCRIPT_ROOT + '/do_action', {
 				bid: $(this).val()
 			}, function(data) {
-				$('#player_name').html('<b>Player ' + data.player + '</b> bid ' + data.bid);
+				$('#log').html(data.msg);
+				$('#middle_box').html(data.buttons);
 			});
 			return false;
 		});
@@ -23,7 +22,7 @@
 	<title>pb - Pitch Bot</title>
 </head>
 <body>
-	<table>
+	<table id="body_table">
 		<tr>
 			<td id="opponent_name"><b>Player 2</b></td>
 		</tr>
@@ -47,6 +46,9 @@
 		</tr>
 		<tr>
 			<td id="player_name"><b>Player 1</b></td>
+		</tr>
+		<tr>
+			<td id="log"></td>
 		</tr>
 	</table>
 </body>
