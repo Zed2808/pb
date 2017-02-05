@@ -1,7 +1,6 @@
-from flask import session, render_template
+from flask import session, render_template, request, jsonify
 from app import app
 from .game.deck import new_card, new_deck, push_back, pop_back, sort_deck
-import json
 
 @app.route('/')
 @app.route('/index')
@@ -34,10 +33,18 @@ def index():
 		session['scores'].append(0)
 
 	# PLACEHOLDER - Deal some cards to the players
-	for player in range(session['num_players']):
-		for card in range(session['hand_size']):
-			push_back(session['hands'][player], pop_back(session['deck']))
-		# Sort hands
-		sort_deck(session['hands'][player], session['trump'], session['lead_suit'])
+	# for player in range(session['num_players']):
+	# 	for card in range(session['hand_size']):
+	# 		push_back(session['hands'][player], pop_back(session['deck']))
+	# 	# Sort hands
+	# 	sort_deck(session['hands'][player], session['trump'], session['lead_suit'])
 
-	return render_template('index.html', hands=session['hands'])
+	return render_template('index.html')
+
+@app.route('/bid')
+def bid():
+	bid = request.args.get('bid', 0, type=int)
+	session['bid'] = bid
+	session['min_bid'] = bid + 1
+	session['bidder'] = session['active_player']
+	return jsonify(player=session['active_player'], bid=bid)
