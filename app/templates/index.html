@@ -6,23 +6,25 @@
 	$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
 
 	$(document).ready(function() {
-		$('#body_table').on('click', '.bid_button', function() {
+		$('#middle').on('click', '.bid_button', function() {
 			$.getJSON($SCRIPT_ROOT + '/do_action', {
 				bid: $(this).val()
 			}, function(data) {
 				$('#log').html(data.msg);
-				$('#adv_button_cell') = '<button id="adv_button" type="button">Next</button>';
+				$('#middle').html(data.middle);
+				$('#bottom').html(data.bottom);
 			});
 			return false;
 		});
 
-		$('#adv_button_cell').on('click', '#adv_button', function() {
-			$.getJSON($SCRIPT_ROOT + '/do_action', {
-				bot: true
-			}, function(data) {
-				$('#log').html(data.msg);
-				$('#middle_box').html(data.middle);
-			})
+		$('#bottom').on('click', '#adv_button', function() {
+			$.getJSON($SCRIPT_ROOT + '/do_action', {},
+				function(data) {
+					$('#log').html(data.msg);
+					$('#middle').html(data.middle);
+					$('#bottom').html(data.bottom);
+				}
+			)
 		})
 	});
 </script>
@@ -39,7 +41,7 @@
 			<td id="opponent_cards" height="200px"></td>
 		</tr>
 		<tr>
-			<td id="middle_box" height="200px">
+			<td id="middle" height="200px">
 				{% if session['active_player'] == 0 %}
 				<table>
 					<tr>
@@ -60,13 +62,11 @@
 		</tr>
 		<tr>
 			<td id="log">
-				{% if session['active_player'] != 0 %}
 				<p><b>Player {{ session['active_player']+1 }}</b> bids first.</p>
-				{% endif %}
 			</td>
 		</tr>
 		<tr>
-			<td id="adv_button_cell">
+			<td id="bottom">
 				{% if session['active_player'] != 0 %}
 				<button id="adv_button" type="button">Next</button>
 				{% endif %}
