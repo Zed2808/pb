@@ -30,7 +30,7 @@ def pop_back(deck):
 	return deck['cards'].pop()
 
 # Sort deck (trump, then lead, then others)
-def sort_deck(deck, trump, lead):
+def sort_deck(deck, trump=0, lead=0):
 	# Create list of empty lists, one for each suit
 	suit_lists = [[] for suit in range(4)]
 

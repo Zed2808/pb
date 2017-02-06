@@ -57,8 +57,15 @@ def do_action():
 			</tr>
 		</table>'''
 
+	# HTML for displaying a card image
+	card_html = '<img class="card" value="{}" src="static/img/cards/{}_{}.png" width="100" height="145">'
+	card_back = '<img src="static/img/cards/back.png" width="100" height="145">'
+
 	# Default states for middle and bottom
+	msg = ''
+	top_hand = ''
 	middle = ''
+	bottom_hand = ''
 	bottom = ''
 
 	# Bidding round
@@ -98,10 +105,8 @@ def do_action():
 				msg += '<br><b>Player {}</b> is forced to bid {}.'.format(session['bidder']+1, session['bid'])
 				bottom = adv_button
 
-				# Prepare for next round
+				#Prepare for first round
 				session['round'] = 0
-
-			return jsonify(msg=msg, middle=middle, bottom=bottom)
 
 		# If others have bid, dealer can still match or pass
 		else:
@@ -114,22 +119,53 @@ def do_action():
 
 			# Dealer passes
 			if bid == 0:
-				# Prepare for first round
-				session['round'] = 0
 				bottom = adv_button
-				return jsonify(msg='<b>Player {}</b> passes.'.format(session['active_player']+1), middle=middle, bottom=bottom)
+				msg = '<b>Player {}</b> passes.'.format(session['active_player']+1)
 			# Dealer matches
 			else:
 				msg = '<b>Player {}</b> matches <b>Player {}</b>\'s bid of {}.'.format(session['active_player']+1,
 					                                                                   session['bidder']+1,
 					                                                                   session['bid'])
 				session['bidder'] = session['active_player']
-				#Prepare for first round
-				session['round'] = 0
 				bottom = adv_button
-				return jsonify(msg=msg, middle=middle, bottom=bottom)
+
+			#Prepare for first round
+			session['round'] = 0
+
 	# Regular rounds
-	# else:
-		# First round
-		# if session['round'] == 0:
-			# Deal hands
+	else:
+		# If start of the hand
+		if session['round'] == 0 and session['turn'] == 0:
+			# Log who is leading out
+			msg = '<b>Player {}</b> won the bid and is leading out.'.format(session['bidder']+1)
+
+			# Deal hand to each player
+			for player in range(session['num_players']):
+				# Deal cards up to hand_size
+				for n in range(session['hand_size']):
+					# Get card from the deck
+					card = pop_back(session['deck'])
+
+					# Add card to player's hand
+					push_back(session['hands'][player], card)
+
+		# Prepare each player's hand for display
+		for player in range(session['num_players']):
+			# Sort hands
+			sort_deck(session['hands'][player])
+
+			# Add card html to display
+			for n in range(len(session['hands'][player]['cards'])):
+				# Get card to display
+				card = session['hands'][player]['cards'][n]
+
+				# If human's hand
+				if player == 0:
+					# Add card to be displayed
+					bottom_hand += card_html.format(n, card['suit'], card['value'])
+				# Bot's hand
+				else:
+					# Add card back to be displayed
+					top_hand += card_back
+
+	return jsonify(msg=msg, top_hand=top_hand, middle=middle, bottom_hand=bottom_hand, bottom=bottom)

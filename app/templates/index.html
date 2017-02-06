@@ -11,7 +11,9 @@
 				bid: $(this).val()
 			}, function(data) {
 				$('#log').html(data.msg);
+				$('#top_hand').html(data.top_hand);
 				$('#middle').html(data.middle);
+				$('#bottom_hand').html(data.bottom_hand);
 				$('#bottom').html(data.bottom);
 			});
 			return false;
@@ -21,7 +23,9 @@
 			$.getJSON($SCRIPT_ROOT + '/do_action', {},
 				function(data) {
 					$('#log').html(data.msg);
+					$('#top_hand').html(data.top_hand);
 					$('#middle').html(data.middle);
+					$('#bottom_hand').html(data.bottom_hand);
 					$('#bottom').html(data.bottom);
 				}
 			)
@@ -35,10 +39,10 @@
 <body>
 	<table id="body_table">
 		<tr>
-			<td id="opponent_name"><b>Player 2</b></td>
+			<td id="top_name"><b>Player 2</b></td>
 		</tr>
 		<tr>
-			<td id="opponent_cards" height="200px"></td>
+			<td id="top_hand" height="200px"></td>
 		</tr>
 		<tr>
 			<td id="middle" height="200px">
@@ -55,10 +59,10 @@
 			</td>
 		</tr>
 		<tr>
-			<td id="player_box" height="200px"></td>
+			<td id="bottom_hand" height="200px"></td>
 		</tr>
 		<tr>
-			<td id="player_name"><b>Player 1</b></td>
+			<td id="bottom_name"><b>Player 1</b></td>
 		</tr>
 		<tr>
 			<td id="log">
