@@ -1,6 +1,6 @@
 from flask import session, render_template, request, jsonify
 from app import app
-from .game.deck import new_card, new_deck, push_back, pop_back, sort_deck
+from .game.deck import new_card, new_deck, push_front, push_back, pop_back, remove_card, sort_deck
 from .game.pb import PB
 from .game.game import next_player, next_dealer
 
@@ -16,7 +16,7 @@ def index():
 	session['bid'] = 0
 	session['bidder'] = -1
 	session['round'] = -1
-	session['turn'] = 0
+	session['turn'] = -1
 	session['taker'] = -1
 	session['top_card'] = new_card()
 	session['trump'] = 0
@@ -58,7 +58,8 @@ def do_action():
 		</table>'''
 
 	# HTML for displaying a card image
-	card_html = '<img class="card" value="{}" src="static/img/cards/{}_{}.png" width="100" height="145">'
+	card_clickable_html = '<input type="image" class="card" value="{}" src="static/img/cards/{}_{}.png" width="100" height="145">'
+	card_unclickable_html = '<img src="static/img/cards/{}_{}.png" width="100" height="145">'
 	card_back = '<img src="static/img/cards/back.png" width="100" height="145">'
 
 	# Default states for middle and bottom
@@ -67,6 +68,8 @@ def do_action():
 	middle = ''
 	bottom_hand = ''
 	bottom = ''
+
+	round_over = False
 
 	# Bidding round
 	if session['round'] == -1:
@@ -134,12 +137,17 @@ def do_action():
 
 	# Regular rounds
 	else:
+		print('>>> START OF TURN')
+		print('>>> active_player: {}'.format(session['active_player']))
+		print('>>> turn: {}'.format(session['turn']))
+
 		# If start of the hand
-		if session['round'] == 0 and session['turn'] == 0:
+		if session['round'] == 0 and session['turn'] == -1:
 			# Log who is leading out
 			msg = '<b>Player {}</b> won the bid and is leading out.'.format(session['bidder']+1)
 
 			# Deal hand to each player
+			print('>>> Dealing hands')
 			for player in range(session['num_players']):
 				# Deal cards up to hand_size
 				for n in range(session['hand_size']):
@@ -149,7 +157,65 @@ def do_action():
 					# Add card to player's hand
 					push_back(session['hands'][player], card)
 
-		# Prepare each player's hand for display
+		# Actual game turns
+		elif session['turn'] > -1 and session['turn'] < session['num_players']:
+			# Playing a card
+			# Human's turn
+			if session['active_player'] == 0:
+				choice = request.args.get('card', 0, type=int)
+
+				# Enable adv_button
+				bottom = adv_button
+			# Bot's turn
+			else:
+				choice = PB.action(session)
+
+			# Set played card from player's choice
+			played_card = remove_card(session['hands'][session['active_player']], choice)
+			print('>>> Player {} played {} of {}'.format(session['active_player'], played_card['value'], played_card['suit']))
+
+			msg += 'Played {} {}.'.format(played_card['suit'], played_card['value'])
+
+			# If leading the round
+			if session['turn'] == 0:
+				# Set lead suit, initial taker, top card, round_over
+				session['lead_suit'] = played_card['suit']
+				session['taker'] = session['active_player']
+				session['top_card'] = played_card
+
+				# Set trump if first round
+				if session['round'] == 0:
+					session['trump'] = played_card['suit']
+					msg += 'Trump is now {}'.format(played_card['suit'])
+
+			# Move played card to middle, prepare to display
+			push_back(session['middle'], played_card)
+
+			# Prepare for next player
+			next_player(session)
+
+		# Prepare for next turn
+		session['turn'] += 1
+
+		# Last turn completed
+		if session['turn'] >= session['num_players']:
+			print('>>> all turns completed')
+
+			# Taker takes trick
+			print('>>> Player {} takes the trick'.format(session['taker']))
+			msg += '<b>Player {}</b> takes the trick.'.format(session['taker']+1)
+
+			# Don't take cards yet
+			# for card in range(session['num_players']):
+			# 	push_back(session['tricks'][session['taker']], pop_back(session['middle']))
+
+			round_over = True
+			bottom = adv_button
+
+			# Set next active_player to taker
+			session['active_player'] = session['taker']
+
+		# Prepare hands for display
 		for player in range(session['num_players']):
 			# Sort hands
 			sort_deck(session['hands'][player])
@@ -161,11 +227,23 @@ def do_action():
 
 				# If human's hand
 				if player == 0:
-					# Add card to be displayed
-					bottom_hand += card_html.format(n, card['suit'], card['value'])
+					# If human about to go, make cards clickable
+					if session['active_player'] == 0 and round_over == False:
+						# Add card to be displayed
+						bottom_hand += card_clickable_html.format(n, card['suit'], card['value'])
+					else:
+						bottom_hand += card_unclickable_html.format(card['suit'], card['value'])
 				# Bot's hand
 				else:
 					# Add card back to be displayed
-					top_hand += card_back
+					# top_hand += card_back
+					top_hand += card_unclickable_html.format(card['suit'], card['value'])
+
+		# Prepare middle cards for display
+		for card in range(len(session['middle']['cards'])):
+			middle += card_unclickable_html.format(session['middle']['cards'][card]['suit'],
+				                                   session['middle']['cards'][card]['value'])
+
+		print('>>> END OF TURN')
 
 	return jsonify(msg=msg, top_hand=top_hand, middle=middle, bottom_hand=bottom_hand, bottom=bottom)

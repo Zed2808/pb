@@ -21,13 +21,23 @@ def fill_deck(deck, shuffled=False):
 		for value in range(2, 15):
 			deck['cards'].append(new_card(suit, value))
 
+# Add specified card to front of deck
+def push_front(deck, card):
+	deck['cards'].insert(0, card)
+
 # Add specified card to end deck
 def push_back(deck, card):
-	deck['cards'].append(new_card(card['suit'], card['value']))
+	deck['cards'].append(card)
 
 # Remove card from beginning of deck
 def pop_back(deck):
 	return deck['cards'].pop()
+
+# Remove and return card at index
+def remove_card(deck, index):
+	card = deck['cards'][index]
+	del deck['cards'][index]
+	return card
 
 # Sort deck (trump, then lead, then others)
 def sort_deck(deck, trump=0, lead=0):
