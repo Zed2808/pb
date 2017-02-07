@@ -57,18 +57,7 @@
 			<td id="top_hand" height="200px"></td>
 		</tr>
 		<tr>
-			<td id="middle" height="200px">
-				{% if session['active_player'] == 0 %}
-				<table>
-					<tr>
-						<td><button class="bid_button" type="button" value="0">Pass</button></td>
-						<td><button class="bid_button" type="button" value="2">Bid 2</button></td>
-						<td><button class="bid_button" type="button" value="3">Bid 3</button></td>
-						<td><button class="bid_button" type="button" value="4">Bid 4</button></td>
-					</tr>
-				</table>
-				{% endif %}
-			</td>
+			<td id="middle" height="200px"></td>
 		</tr>
 		<tr>
 			<td id="bottom_hand" height="200px"></td>
@@ -77,14 +66,12 @@
 			<td id="bottom_name"><b>Player 1</b></td>
 		</tr>
 		<tr>
-			<td id="log">
-				<p><b>Player {{ session['active_player']+1 }}</b> bids first.</p>
-			</td>
+			<td id="log"></td>
 		</tr>
 		<tr>
 			<td id="bottom">
-				{% if session['active_player'] != 0 %}
-				<button id="adv_button" type="button">Next</button>
+				{% if not session['hands_dealt'] %}
+				<button id="adv_button" type="button">Deal</button>
 				{% endif %}
 			</td>
 		</tr>
