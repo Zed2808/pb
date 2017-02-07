@@ -52,6 +52,15 @@ def do_action():
 	adv_button = '<button id="adv_button" type="button">Next</button>'
 
 	# Buttons for bidding
+	bid_buttons = '''
+		<table>
+			<tr>
+				<td><button class="bid_button" type="button" value="0">Pass</button></td>
+				<td><button class="bid_button" type="button" value="2">2</button></td>
+				<td><button class="bid_button" type="button" value="3">3</button></td>
+				<td><button class="bid_button" type="button" value="4">4</button></td>
+			</tr>
+		</table>'''
 	match_pass_buttons = '''
 		<table>
 			<tr>
@@ -85,8 +94,13 @@ def do_action():
 				# Add card to player's hand
 				push_back(session['hands'][player], card)
 
+		# If human is bidding first, show bid buttons
+		if session['active_player'] == 0:
+			middle = bid_buttons
+		else:
+			bottom = adv_button
+
 		msg += '<b>Player {}</b> bids first.'.format(session['active_player']+1)
-		bottom = adv_button
 		session['hands_dealt'] = True
 
 	# Bidding round
@@ -110,9 +124,11 @@ def do_action():
 				session['bid'] = bid
 				session['min_bid'] = bid + 1
 				session['bidder'] = session['active_player']
+				print('>>> player {} passes'.format(session['active_player']))
 				msg = '<b>Player {}</b> bid {}.'.format(session['bidder']+1, bid)
 			# Pass
 			else:
+				print('>>> player {} bid {}'.format(session['active_player'], bid))
 				msg = '<b>Player {}</b> passes.'.format(session['active_player']+1)
 
 			# Prepare for next player
@@ -122,6 +138,8 @@ def do_action():
 			if session['active_player'] == session['dealer'] and session['bid'] < 2:
 				session['bid'] = session['min_bid']
 				session['bidder'] = session['active_player']
+
+				print('>>> player {} is forced to bid {}'.format(session['active_player'], session['bid']))
 
 				msg += '<br><b>Player {}</b> is forced to bid {}.'.format(session['bidder']+1, session['bid'])
 				bottom = adv_button
@@ -152,6 +170,7 @@ def do_action():
 
 			#Prepare for first round
 			session['round'] = 0
+			session['turn'] = -1
 
 	# Regular rounds
 	else:
@@ -169,6 +188,7 @@ def do_action():
 			if session['round'] == 0 and session['turn'] == -1:
 				# Log who is leading out
 				msg = '<b>Player {}</b> won the bid and is leading out.'.format(session['bidder']+1)
+				session['active_player'] = session['bidder']
 
 			# Actual game turns
 			elif session['turn'] > -1 and session['turn'] < session['num_players']:
@@ -258,11 +278,20 @@ def do_action():
 
 				# Last round of the hand
 				if session['round'] >= session['hand_size']:
+					# Score hands
 					print('>>> SCORING HANDS')
 					msg += score_hands(session)
 
+					# Prepare for a new hand
 					bottom = adv_button
-					# session['hand_over'] = True
+					session['hands_dealt'] = False
+					session['round'] = -1
+					next_dealer(session)
+					session['active_player'] = session['dealer']
+					next_player(session)
+					session['min_bid'] = 2
+					session['bid'] = 0
+					session['bidder'] = -1
 
 			# Prepare for next turn
 			session['turn'] += 1

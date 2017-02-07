@@ -14,8 +14,8 @@ def next_dealer(session):
 
 # Score hands and modify game state
 def score_hands(session):
-	high_trump = 0
-	low_trump = 14
+	high_trump = 1
+	low_trump = 15
 	jack_taker = -1
 	game_taker = -1
 	hand_scores = []
