@@ -16,6 +16,7 @@ def index():
 	session['bid'] = 0
 	session['bidder'] = -1
 	session['round'] = -1
+	session['round_over'] = False
 	session['turn'] = -1
 	session['taker'] = -1
 	session['top_card'] = new_card()
@@ -68,8 +69,6 @@ def do_action():
 	middle = ''
 	bottom_hand = ''
 	bottom = ''
-
-	round_over = False
 
 	# Bidding round
 	if session['round'] == -1:
@@ -187,12 +186,53 @@ def do_action():
 				if session['round'] == 0:
 					session['trump'] = played_card['suit']
 					msg += 'Trump is now {}'.format(played_card['suit'])
+			# Otherwise, check if card beats top
+			else:
+				# Current top is trump
+				if session['top_card']['suit'] == session['trump']:
+					# Played card is also trump
+					if played_card['suit'] == session['trump']:
+						# Played value beats top value
+						if played_card['value'] > session['top_card']['value']:
+							# Set new top & taker
+							session['top_card'] = played_card
+							session['taker'] = session['active_player']
+				# Current top is not trump (must be lead)
+				else:
+					# Played card is trump
+					if played_card['suit'] == session['trump']:
+						# Set new top & taker
+						session['top_card'] = played_card
+						session['taker'] = session['active_player']
+					# Played card is lead suit
+					elif played_card['suit'] == session['lead_suit']:
+						# Played card value beats top value
+						if played_card['value'] > session['top_card']['value']:
+							# Set new top & taker
+							session['top_card'] = played_card
+							session['taker'] = session['active_player']
 
 			# Move played card to middle, prepare to display
 			push_back(session['middle'], played_card)
 
 			# Prepare for next player
 			next_player(session)
+
+		# Round is over: collect the tricks and prepare a new round
+		if session['round_over']:
+			print('>>> COLLECTING TRICK')
+
+			# Collect trick for taker
+			for card in range(session['num_players']):
+				push_back(session['tricks'][session['taker']], pop_back(session['middle']))
+
+			session['round_over'] = False
+			session['round'] += 1
+			session['turn'] = -1
+			session['active_player'] = session['taker']
+
+			# If bot will lead next round, show adv_button
+			bottom = adv_button
 
 		# Prepare for next turn
 		session['turn'] += 1
@@ -209,11 +249,8 @@ def do_action():
 			# for card in range(session['num_players']):
 			# 	push_back(session['tricks'][session['taker']], pop_back(session['middle']))
 
-			round_over = True
+			session['round_over'] = True
 			bottom = adv_button
-
-			# Set next active_player to taker
-			session['active_player'] = session['taker']
 
 		# Prepare hands for display
 		for player in range(session['num_players']):
@@ -228,7 +265,7 @@ def do_action():
 				# If human's hand
 				if player == 0:
 					# If human about to go, make cards clickable
-					if session['active_player'] == 0 and round_over == False:
+					if session['active_player'] == 0 and session['round_over'] == False:
 						# Add card to be displayed
 						bottom_hand += card_clickable_html.format(n, card['suit'], card['value'])
 					else:
