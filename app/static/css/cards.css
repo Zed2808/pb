@@ -1,0 +1,13 @@
+.card {
+	width: 150px;
+	height: 218px;
+}
+
+.trump {
+	outline-style: solid;
+	outline-color: yellow;
+}
+
+.unclickable {
+	opacity: 0.5;
+}
