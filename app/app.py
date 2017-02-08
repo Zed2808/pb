@@ -1,8 +1,10 @@
-from flask import session, render_template, request, jsonify
-from app import app
+from flask import Flask, session, render_template, request, jsonify
 from .game.deck import new_card, card_to_string, suit_to_string, new_deck, push_front, push_back, pop_back, remove_card, sort_deck, playable_cards
 from .game.pb import PB
 from .game.game import next_player, next_dealer, score_hands
+
+app = Flask(__name__)
+app.secret_key = 'SuperSecretKey'
 
 @app.route('/')
 @app.route('/index')
