@@ -90,3 +90,26 @@ def sort_deck(deck, trump=0, lead=0):
 	for suit in range(4):
 		if suit != trump and suit != lead:
 			deck['cards'] += suit_lists[suit]
+
+# Return number of playable cards in the hand
+def playable_cards(deck, session):
+	# If first turn, all cards are playable
+	if session['turn'] == 0:
+		return session['hand_size']
+
+	num_trump = 0
+	num_lead = 0
+
+	# Count number of trump and lead suit cards
+	for card in deck['cards']:
+		if card['suit'] == session['lead_suit']:
+			num_lead += 1
+		elif card['suit'] == session['trump']:
+			num_trump += 1
+
+	# If no lead suit cards
+	if num_lead == 0:
+		# Can play anything (trump or other)
+		return len(deck['cards'])
+	else:
+		return num_trump + num_lead

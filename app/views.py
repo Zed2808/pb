@@ -1,6 +1,6 @@
 from flask import session, render_template, request, jsonify
 from app import app
-from .game.deck import new_card, card_to_string, suit_to_string, new_deck, push_front, push_back, pop_back, remove_card, sort_deck
+from .game.deck import new_card, card_to_string, suit_to_string, new_deck, push_front, push_back, pop_back, remove_card, sort_deck, playable_cards
 from .game.pb import PB
 from .game.game import next_player, next_dealer, score_hands
 
@@ -64,7 +64,7 @@ def do_action():
 
 	# HTML for displaying a card image
 	card_clickable_html = '<input type="image" class="card" value="{}" src="static/img/cards/{}_{}.png" width="100" height="145">'
-	card_unclickable_html = '<img src="static/img/cards/{}_{}.png" width="100" height="145">'
+	card_unclickable_html = '<img class="unclickable_card" src="static/img/cards/{}_{}.png" width="100" height="145">'
 	card_back = '<img src="static/img/cards/back.png" width="100" height="145">'
 
 	# Default states for middle and bottom
@@ -307,15 +307,17 @@ def do_action():
 		# Sort hands
 		sort_deck(session['hands'][player])
 
+		# Get number of playable cards in hand
+		playable = playable_cards(session['hands'][player], session)
+
 		# Add card html to display
 		for n in range(len(session['hands'][player]['cards'])):
-			# Get card to display
 			card = session['hands'][player]['cards'][n]
 
 			# If human's hand
 			if player == 0:
-				# If human about to go, make cards clickable
-				if session['active_player'] == 0 and session['round_over'] == False:
+				# If human about to go and card is playable, make cards clickable
+				if session['active_player'] == 0 and n in range(playable) and session['round_over'] == False:
 					# Add card to be displayed
 					bottom_hand += card_clickable_html.format(n, card['suit'], card['value'])
 				else:
@@ -323,8 +325,8 @@ def do_action():
 			# Bot's hand
 			else:
 				# Add card back to be displayed
-				# top_hand += card_back
-				top_hand += card_unclickable_html.format(card['suit'], card['value'])
+				top_hand += card_back
+				# top_hand += card_unclickable_html.format(card['suit'], card['value'])
 
 	# Prepare middle cards for display
 	for card in session['middle']['cards']:
