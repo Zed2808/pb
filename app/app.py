@@ -1,5 +1,5 @@
 from flask import Flask, session, render_template, request, jsonify
-from .game import deck, game, pb
+from .game import *
 
 app = Flask(__name__)
 app.secret_key = 'SuperSecretKey'
