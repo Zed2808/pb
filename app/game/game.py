@@ -77,24 +77,33 @@ def score_hands(session):
 	if game_taker > -1:
 		hand_scores[game_taker] += 1
 
-	# If bidder does not make their bid
-	if hand_scores[session['bidder']] < session['bid']:
-		# Lose points equal to bid, set hand score to 0
-		session['scores'][session['bidder']] -= session['bid']
-		hand_scores[session['bidder']] = 0
-
-	# Add hand scores to game scores
-	for player in range(session['num_players']):
-		session['scores'][player] += hand_scores[player]
-
 	# Return log message
 	msg = '<b>Player {}</b> took high.'.format(high_taker + 1)
 	msg += '<br><b>Player {}</b> took low.'.format(low_taker + 1)
 	if jack_taker > -1:
 		msg += '<br><b>Player {}</b> took jack.'.format(jack_taker + 1)
 	if game_taker > -1:
-		msg += '<br><b>Player {}</b> took game.'.format(game_taker + 1)
+		msg += '<br><b>Player {}</b> took game.<br>'.format(game_taker + 1)
 	else:
-		msg += '<br>Players tied for game.'
+		msg += '<br>Players tied for game.<br>'
+
+	for player in range(session['num_players']):
+		# If player was the bidder
+		if player == session['bidder']:
+			# If bidder does not make their bid
+			if hand_scores[player] < session['bid']:
+				# Set hand score to -bid
+				hand_scores[session['bidder']] = -(session['bid'])
+				msg += '<br><b>Player {0}</b> did not make their bid of {1} and loses {1} points.'.format(player+1, session['bid'])
+			# Bidder did make their bid
+			else:
+				msg += '<br><b>Player {}</b> made their bid of {} and gets {} points.'.format(player+1, session['bid'], hand_scores[player])
+		# Player was not the bidder
+		elif hand_scores[player] > 0:
+			msg += '<br><b>Player {}</b> gets {} points.'.format(player+1, hand_scores[player])
+
+	# Add hand scores to game scores
+	for player in range(session['num_players']):
+		session['scores'][player] += hand_scores[player]
 
 	return msg

@@ -1,6 +1,6 @@
 from flask import session, render_template, request, jsonify
 from app import app
-from .game.deck import new_card, new_deck, push_front, push_back, pop_back, remove_card, sort_deck
+from .game.deck import new_card, card_to_string, suit_to_string, new_deck, push_front, push_back, pop_back, remove_card, sort_deck
 from .game.pb import PB
 from .game.game import next_player, next_dealer, score_hands
 
@@ -36,13 +36,6 @@ def index():
 		session['hands'].append(new_deck())
 		session['tricks'].append(new_deck())
 		session['scores'].append(0)
-
-	# PLACEHOLDER - Deal some cards to the players
-	# for player in range(session['num_players']):
-	# 	for card in range(session['hand_size']):
-	# 		push_back(session['hands'][player], pop_back(session['deck']))
-	# 	# Sort hands
-	# 	sort_deck(session['hands'][player], session['trump'], session['lead_suit'])
 
 	return render_template('index.html')
 
@@ -205,9 +198,9 @@ def do_action():
 
 				# Set played card from player's choice
 				played_card = remove_card(session['hands'][session['active_player']], choice)
-				print('>>> Player {} played {} of {}'.format(session['active_player'], played_card['value'], played_card['suit']))
+				print('>>> Player {} played the {}.'.format(session['active_player'], card_to_string(played_card)))
 
-				msg += '<b>Player {}</b> played {} of {}.'.format(session['active_player']+1, played_card['value'], played_card['suit'])
+				msg += '<b>Player {}</b> played the {}.'.format(session['active_player']+1, card_to_string(played_card))
 
 				# If leading the round
 				if session['turn'] == 0:
@@ -220,9 +213,9 @@ def do_action():
 
 					# Set trump if first round
 					if session['round'] == 0:
-						print('>>> Player {} sets trump as {}'.format(session['active_player'], played_card['suit']))
+						print('>>> Player {} sets trump as {}'.format(session['active_player'], suit_to_string(played_card['suit'])))
 						session['trump'] = played_card['suit']
-						msg += ' Trump is now {}'.format(played_card['suit'])
+						msg += ' Trump is now {}.'.format(suit_to_string(played_card['suit']))
 				# Otherwise, check if card beats top
 				else:
 					# Current top is trump
@@ -307,12 +300,6 @@ def do_action():
 				session['round_over'] = True
 				bottom = adv_button
 
-			# End hand
-			# if session['turn'] >= session['num_players'] and session['round'] == session['hand_size']-1:
-			# 	print('>>> END OF HAND')
-
-			# 	session['round'] += 1
-
 			print('>>> END OF TURN')
 
 	# Prepare hands for display
@@ -343,4 +330,19 @@ def do_action():
 	for card in session['middle']['cards']:
 		middle += card_unclickable_html.format(card['suit'], card['value'])
 
-	return jsonify(msg=msg, top_hand=top_hand, middle=middle, bottom_hand=bottom_hand, bottom=bottom)
+	# Human is the dealer
+	if session['dealer'] == 0:
+		top_name = '<b>Player 2</b>: {} points'.format(session['scores'][1])
+		bottom_name = '<b>Player 1</b> (dealer): {} points'.format(session['scores'][0])
+	# Bot is the dealer
+	else:
+		top_name = '<b>Player 2</b> (dealer): {} points'.format(session['scores'][1])
+		bottom_name = '<b>Player 1</b>: {} points'.format(session['scores'][0])
+
+	return jsonify(msg=msg,
+		           top_name=top_name,
+		           top_hand=top_hand,
+		           middle=middle,
+		           bottom_hand=bottom_hand,
+		           bottom_name=bottom_name,
+		           bottom=bottom)

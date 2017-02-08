@@ -1,8 +1,31 @@
 from random import shuffle
+from collections import defaultdict
 
 # Return a new card (ace of spades by default)
 def new_card(suit=0, value=14):
 	return {'suit': suit, 'value': value}
+
+# Return string representation of a suit
+def suit_to_string(suit):
+	suits = {
+		0: 'Spades',
+		1: 'Hearts',
+		2: 'Diamonds',
+		3: 'Clubs'
+	}
+	return suits[suit]
+
+# Return a string representing the card
+def card_to_string(card):
+	values = {
+		11: 'Jack',
+		12: 'Queen',
+		13: 'King',
+		14: 'Ace'
+	}
+	values = defaultdict(lambda: card['value'], values)
+
+	return str(values[card['value']]) + ' of ' + suit_to_string(card['suit'])
 
 # Return a new deck (empty & unshuffled by default)
 def new_deck(filled=False, shuffled=False):
