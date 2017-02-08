@@ -63,7 +63,7 @@ def remove_card(deck, index):
 	return card
 
 # Sort deck (trump, then lead, then others)
-def sort_deck(deck, trump=0, lead=0):
+def sort_deck(deck, session):
 	# Create list of empty lists, one for each suit
 	suit_lists = [[] for suit in range(4)]
 
@@ -80,21 +80,24 @@ def sort_deck(deck, trump=0, lead=0):
 		suit_lists[suit].sort(key=lambda card: card['value'], reverse=True)
 
 	# Make sure trump comes first
-	deck['cards'] += suit_lists[trump]
+	deck['cards'] += suit_lists[session['trump']]
 
 	# Only add lead cards if lead != trump
-	if lead != trump:
-		deck['cards'] += suit_lists[lead]
+	if session['lead_suit'] != session['trump']:
+		deck['cards'] += suit_lists[session['lead_suit']]
 
 	# Add all other cards back to the deck
 	for suit in range(4):
-		if suit != trump and suit != lead:
+		if suit != session['trump'] and suit != session['lead_suit']:
 			deck['cards'] += suit_lists[suit]
 
 # Return number of playable cards in the hand
 def playable_cards(deck, session):
+	# No one's turn yet, no cards playable
+	if session['turn'] == -1:
+		return 0
 	# If first turn, all cards are playable
-	if session['turn'] == 0:
+	elif session['turn'] == 0:
 		return session['hand_size']
 
 	num_trump = 0

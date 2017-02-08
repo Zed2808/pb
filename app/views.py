@@ -22,6 +22,7 @@ def index():
 	session['taker'] = -1
 	session['top_card'] = new_card()
 	session['trump'] = 0
+	session['trump_set'] = False
 	session['lead_suit'] = 0
 	session['deck'] = new_deck(filled=True, shuffled=True)
 	session['middle'] = new_deck()
@@ -63,9 +64,9 @@ def do_action():
 		</table>'''
 
 	# HTML for displaying a card image
-	card_clickable_html = '<input type="image" class="card" value="{}" src="static/img/cards/{}_{}.png" width="100" height="145">'
-	card_unclickable_html = '<img class="unclickable_card" src="static/img/cards/{}_{}.png" width="100" height="145">'
-	card_back = '<img src="static/img/cards/back.png" width="100" height="145">'
+	card_clickable_html = '<input type="image" class="card clickable {}" value="{}" src="static/img/cards/{}_{}.png">'
+	card_html = '<img class="card {}" src="static/img/cards/{}_{}.png">'
+	card_back = '<img class="card" src="static/img/cards/back.png">'
 
 	# Default states for middle and bottom
 	msg = ''
@@ -215,6 +216,7 @@ def do_action():
 					if session['round'] == 0:
 						print('>>> Player {} sets trump as {}'.format(session['active_player'], suit_to_string(played_card['suit'])))
 						session['trump'] = played_card['suit']
+						session['trump_set'] = True
 						msg += ' Trump is now {}.'.format(suit_to_string(played_card['suit']))
 				# Otherwise, check if card beats top
 				else:
@@ -278,6 +280,7 @@ def do_action():
 					# Prepare for a new hand
 					bottom = adv_button
 					session['hands_dealt'] = False
+					session['trump_set'] = False
 					session['round'] = -1
 					next_dealer(session)
 					session['active_player'] = session['dealer']
@@ -305,7 +308,7 @@ def do_action():
 	# Prepare hands for display
 	for player in range(session['num_players']):
 		# Sort hands
-		sort_deck(session['hands'][player])
+		sort_deck(session['hands'][player], session)
 
 		# Get number of playable cards in hand
 		playable = playable_cards(session['hands'][player], session)
@@ -318,19 +321,27 @@ def do_action():
 			if player == 0:
 				# If human about to go, card is playable, round is not over, and round is not bidding round, make cards clickable
 				if session['active_player'] == 0 and n in range(playable) and session['round_over'] == False and session['round'] > -1:
-					# Add card to be displayed
-					bottom_hand += card_clickable_html.format(n, card['suit'], card['value'])
+					# If card is trump and there is a trump
+					if card['suit'] == session['trump'] and session['trump_set']:
+						card_class = 'trump'
+					else:
+						card_class = ''
+					bottom_hand += card_clickable_html.format(card_class, n, card['suit'], card['value'])
 				else:
-					bottom_hand += card_unclickable_html.format(card['suit'], card['value'])
+					bottom_hand += card_html.format('unclickable', card['suit'], card['value'])
 			# Bot's hand
 			else:
 				# Add card back to be displayed
 				top_hand += card_back
-				# top_hand += card_unclickable_html.format(card['suit'], card['value'])
+				# top_hand += card_html.format('unclickable', card['suit'], card['value'])
 
 	# Prepare middle cards for display
 	for card in session['middle']['cards']:
-		middle += card_unclickable_html.format(card['suit'], card['value'])
+		if card['suit'] == session['trump']:
+			card_class = 'trump'
+		else:
+			card_class = ''
+		middle += card_html.format(card_class, card['suit'], card['value'])
 
 	# Human is the dealer
 	if session['dealer'] == 0:

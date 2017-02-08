@@ -35,7 +35,7 @@
 			);
 		});
 
-		$('#bottom_hand').on('click', '.card', function() {
+		$('#bottom_hand').on('click', '.clickable', function() {
 			$.getJSON($SCRIPT_ROOT + '/do_action', {
 				card: $(this).val()
 			}, function(data) {
@@ -52,6 +52,8 @@
 </script>
 
 <head>
+<link rel="stylesheet" type="text/css" href="static/css/cards.css">
+
 	<title>pb - Pitch Bot</title>
 </head>
 <body>
@@ -60,13 +62,13 @@
 			<td id="top_name"><b>Player 2</b></td>
 		</tr>
 		<tr>
-			<td id="top_hand" height="200px"></td>
+			<td id="top_hand" height="250px"></td>
 		</tr>
 		<tr>
-			<td id="middle" height="200px"></td>
+			<td id="middle" height="250px"></td>
 		</tr>
 		<tr>
-			<td id="bottom_hand" height="200px"></td>
+			<td id="bottom_hand" height="250px"></td>
 		</tr>
 		<tr>
 			<td id="bottom_name"><b>Player 1</b></td>
