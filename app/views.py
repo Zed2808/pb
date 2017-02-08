@@ -316,8 +316,8 @@ def do_action():
 
 			# If human's hand
 			if player == 0:
-				# If human about to go and card is playable, make cards clickable
-				if session['active_player'] == 0 and n in range(playable) and session['round_over'] == False:
+				# If human about to go, card is playable, round is not over, and round is not bidding round, make cards clickable
+				if session['active_player'] == 0 and n in range(playable) and session['round_over'] == False and session['round'] > -1:
 					# Add card to be displayed
 					bottom_hand += card_clickable_html.format(n, card['suit'], card['value'])
 				else:
