@@ -108,9 +108,14 @@ def do_action():
 			# Bot's bid
 			else:
 				bid = PB.action(session)
-				# If bot doesn't pass, give player option to match/pass
+				# If bot doesn't pass
 				if bid != 0:
-					middle = match_pass_buttons.format(bid)
+					# Bid is valid
+					if bid in range(2, 5):
+						middle = match_pass_buttons.format(bid)
+					# Default an invalid bid to 0
+					else:
+						bid = 0
 
 			# Not pass
 			if bid != 0:
@@ -149,6 +154,8 @@ def do_action():
 			# Bot
 			else:
 				bid = PB.action(session)
+				if bid not in range(2, 5) and bid != 0:
+					bid = 0
 
 			# Dealer passes
 			if bid == 0:
@@ -196,6 +203,8 @@ def do_action():
 				# Bot's turn
 				else:
 					choice = PB.action(session)
+					if choice not in range(playable_cards(session['hands'][1], session)):
+						choice = 0
 
 				# Set played card from player's choice
 				played_card = remove_card(session['hands'][session['active_player']], choice)
