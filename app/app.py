@@ -25,81 +25,7 @@ def do_action():
 
 	# Bidding round
 	if session['round'] == -1:
-		# As long as we haven't reached the dealer yet
-		if session['active_player'] != session['dealer']:
-			print('>>> dealer not bidding')
-			# Player's bid
-			if session['active_player'] == 0:
-				bid = request.args.get('bid', 0, type=int)
-				session['bottom'] = adv_button
-			# Bot's bid
-			else:
-				bid = PB.action(session)
-				# If bot doesn't pass
-				if bid != 0:
-					# Bid is valid
-					if bid in range(2, 5):
-						session['middle'] = match_pass_buttons.format(bid)
-					# Default an invalid bid to 0
-					else:
-						bid = 0
-
-			# Not pass
-			if bid != 0:
-				# Set bid, bidder, new min_bid
-				session['bid'] = bid
-				session['min_bid'] = bid + 1
-				session['bidder'] = session['active_player']
-				print('>>> player {} bid {}'.format(session['active_player'], bid))
-				session['log'] = '<b>Player {}</b> bid {}.'.format(session['bidder']+1, bid)
-			# Pass
-			else:
-				print('>>> player {} passes'.format(session['active_player']))
-				session['log'] = '<b>Player {}</b> passes.'.format(session['active_player']+1)
-
-			# Prepare for next player
-			next_player(session)
-
-			# Check if dealer's hand is forced
-			if session['active_player'] == session['dealer'] and session['bid'] < 2:
-				session['bid'] = session['min_bid']
-				session['bidder'] = session['active_player']
-
-				print('>>> player {} is forced to bid {}'.format(session['active_player'], session['bid']))
-
-				session['log'] += '<br><b>Player {}</b> is forced to bid {}.'.format(session['bidder']+1, session['bid'])
-				session['middle'] = ''
-				session['bottom'] = adv_button
-
-				#Prepare for first round
-				session['round'] = 0
-
-		# If others have bid, dealer can still match or pass
-		else:
-			# Human
-			if session['active_player'] == 0:
-				bid = request.args.get('bid', 0, type=int)
-			# Bot
-			else:
-				bid = PB.action(session)
-				if bid not in range(2, 5) and bid != 0:
-					bid = 0
-
-			# Dealer passes
-			if bid == 0:
-				session['bottom'] = adv_button
-				session['log'] = '<b>Player {}</b> passes.'.format(session['active_player']+1)
-			# Dealer matches
-			else:
-				session['log'] = '<b>Player {}</b> matches <b>Player {}</b>\'s bid of {}.'.format(session['active_player']+1,
-					                                                                   session['bidder']+1,
-					                                                                   session['bid'])
-				session['bidder'] = session['active_player']
-				session['bottom'] = adv_button
-
-			#Prepare for first round
-			session['round'] = 0
-			session['turn'] = -1
+		bidding_round(session)
 
 	# Regular rounds
 	else:
@@ -246,39 +172,11 @@ def do_action():
 
 			print('>>> END OF TURN')
 
-	# Prepare hands for display
-	for player in range(session['num_players']):
-		# Sort hands
-		sort_deck(session['hands'][player], session)
-
-		# Get number of playable cards in hand
-		playable = playable_cards(session['hands'][player], session)
-
-		# Add card html to display
-		for n in range(len(session['hands'][player]['cards'])):
-			card = session['hands'][player]['cards'][n]
-
-			# If human's hand
-			if player == 0:
-				# If human about to go, card is playable, round is not over, and round is not bidding round, make cards clickable
-				if session['active_player'] == 0 and n in range(playable) and session['round_over'] == False and session['round'] > -1:
-					# If card is trump and there is a trump
-					if card['suit'] == session['trump'] and session['trump_set']:
-						card_class = 'trump'
-					else:
-						card_class = ''
-					session['bottom_hand'] += card_clickable_html.format(card_class, n, card['suit'], card['value'])
-				else:
-					session['bottom_hand'] += card_html.format('unclickable', card['suit'], card['value'])
-			# Bot's hand
-			else:
-				# Add card back to be displayed
-				session['top_hand'] += card_back
-				# session['top_hand'] += card_html.format('unclickable', card['suit'], card['value'])
+	prepare_hands(session)
 
 	prepare_middle(session)
 
-	set_names(session)
+	prepare_names(session)
 
 	return jsonify(top_name=session['top_name'],
 		           top_hand=session['top_hand'],
