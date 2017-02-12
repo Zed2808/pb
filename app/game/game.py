@@ -17,6 +17,7 @@ def init_gamestate(session):
 	session['round_over'] = False
 	session['turn'] = -1
 	session['taker'] = -1
+	session['played_card'] = new_card()
 	session['top_card'] = new_card()
 	session['trump'] = 0
 	session['trump_set'] = False
@@ -158,6 +159,145 @@ def bidding_round(session):
 		#Prepare for first round
 		session['round'] = 0
 		session['turn'] = -1
+
+# Play a card
+def play_card(session):
+	print('>>> HAND IN PROGRESS')
+	print('>>> ROUND {} IN PROGRESS'.format(session['round']))
+	print('>>> START OF TURN {}'.format(session['turn']))
+	print('>>> active_player: {}'.format(session['active_player']))
+
+	# If start of the hand
+	if session['round'] == 0 and session['turn'] == -1:
+		# Log who is leading out
+		session['log'] = '<b>Player {}</b> won the bid and is leading out.'.format(session['bidder']+1)
+		session['active_player'] = session['bidder']
+
+		# Show adv_button if bot is leading
+		if session['active_player'] != 0:
+			session['bottom'] = adv_button
+
+	# Actual game turns
+	elif session['turn'] > -1 and session['turn'] < session['num_players']:
+		# Playing a card
+		# Human's turn
+		if session['active_player'] == 0:
+			choice = request.args.get('card', 0, type=int)
+
+			# Enable adv_button
+			session['bottom'] = adv_button
+		# Bot's turn
+		else:
+			choice = PB.action(session)
+			if choice not in range(playable_cards(session['hands'][1], session)):
+				choice = 0
+
+		# Set played card from player's choice
+		session['played_card'] = remove_card(session['hands'][session['active_player']], choice)
+		print('>>> Player {} played the {}.'.format(session['active_player'], card_to_string(session['played_card'])))
+
+		session['log'] += '<b>Player {}</b> played the {}.'.format(session['active_player']+1, card_to_string(session['played_card']))
+
+		# If leading the round
+		if session['turn'] == 0:
+			print('>>> Player {} leads the hand'.format(session['active_player']))
+
+			# Set lead suit, initial taker, top card, round_over
+			session['lead_suit'] = session['played_card']['suit']
+			session['taker'] = session['active_player']
+			session['top_card'] = session['played_card']
+
+			# Set trump if first round
+			if session['round'] == 0:
+				print('>>> Player {} sets trump as {}'.format(session['active_player'], suit_to_string(session['played_card']['suit'])))
+				session['trump'] = session['played_card']['suit']
+				session['trump_set'] = True
+				session['log'] += ' Trump is now {}.'.format(suit_to_string(session['played_card']['suit']))
+		# Otherwise, check if card beats top
+		else:
+			check_if_new_top(session)
+
+		# Move played card to middle, prepare to display
+		push_back(session['middle_cards'], session['played_card'])
+
+		# Prepare for next player
+		next_player(session)
+
+# Check if the played card is the new top card and set variables accordingly
+def check_if_new_top(session):
+	# Current top is trump
+	if session['top_card']['suit'] == session['trump']:
+		# Played card is also trump
+		if session['played_card']['suit'] == session['trump']:
+			# Played value beats top value
+			if session['played_card']['value'] > session['top_card']['value']:
+				print('>>> Player {} sets new top card'.format(session['active_player']))
+				# Set new top & taker
+				session['top_card'] = session['played_card']
+				session['taker'] = session['active_player']
+	# Current top is not trump (must be lead)
+	else:
+		# Played card is trump
+		if session['played_card']['suit'] == session['trump']:
+			print('>>> Player {} sets new top card'.format(session['active_player']))
+			# Set new top & taker
+			session['top_card'] = session['played_card']
+			session['taker'] = session['active_player']
+		# Played card is lead suit
+		elif session['played_card']['suit'] == session['lead_suit']:
+			# Played card value beats top value
+			if session['played_card']['value'] > session['top_card']['value']:
+				print('>>> Player {} sets new top card'.format(session['active_player']))
+				# Set new top & taker
+				session['top_card'] = session['played_card']
+				session['taker'] = session['active_player']
+
+# End the turn
+def end_turn(session):
+	print('>>> all turns completed')
+
+	# Taker takes trick
+	print('>>> Player {} takes the trick'.format(session['taker']))
+	session['log'] += '<br><b>Player {}</b> takes the trick.'.format(session['taker']+1)
+
+	session['round_over'] = True
+	session['bottom'] = adv_button
+
+# End the round, score hands and prepare for new hand if necessary
+def end_round(session):
+	print('>>> ROUND {} OVER: COLLECTING TRICK'.format(session['round']))
+
+	# Collect trick for taker
+	for card in range(session['num_players']):
+		push_back(session['tricks'][session['taker']], pop_back(session['middle_cards']))
+
+	session['round_over'] = False
+	session['round'] += 1
+	print('>>> advancing to round {}'.format(session['round']))
+	session['turn'] = -1
+	session['active_player'] = session['taker']
+
+	# If bot will lead next round, show adv_button
+	if session['active_player'] != 0:
+		session['bottom'] = adv_button
+
+	# Last round of the hand
+	if session['round'] >= session['hand_size']:
+		# Score hands
+		print('>>> SCORING HANDS')
+		session['log'] += score_hands(session)
+
+		# Prepare for a new hand
+		session['bottom'] = adv_button
+		session['hands_dealt'] = False
+		session['trump_set'] = False
+		session['round'] = -1
+		next_dealer(session)
+		session['active_player'] = session['dealer']
+		next_player(session)
+		session['min_bid'] = 2
+		session['bid'] = 0
+		session['bidder'] = -1
 
 # Score hands and modify game state
 def score_hands(session):
