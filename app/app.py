@@ -17,12 +17,7 @@ def index():
 
 @app.route('/do_action')
 def do_action():
-	# Default states for middle and bottom
-	msg = ''
-	top_hand = ''
-	middle = ''
-	bottom_hand = ''
-	bottom = ''
+	reset_returns(session)
 
 	# Make sure players have cards
 	if not session['hands_dealt']:
@@ -39,21 +34,22 @@ def do_action():
 
 		# If human is bidding first, show bid buttons
 		if session['active_player'] == 0:
-			middle = bid_buttons
+			session['middle'] = bid_buttons
 		else:
-			bottom = adv_button
+			session['bottom'] = adv_button
 
-		msg += '<b>Player {}</b> bids first.'.format(session['active_player']+1)
+		session['log'] += '<b>Player {}</b> bids first.'.format(session['active_player']+1)
 		session['hands_dealt'] = True
 
 	# Bidding round
 	elif session['round'] == -1:
 		# As long as we haven't reached the dealer yet
 		if session['active_player'] != session['dealer']:
+			print('>>> dealer not bidding')
 			# Player's bid
 			if session['active_player'] == 0:
 				bid = request.args.get('bid', 0, type=int)
-				bottom = adv_button
+				session['bottom'] = adv_button
 			# Bot's bid
 			else:
 				bid = PB.action(session)
@@ -61,7 +57,7 @@ def do_action():
 				if bid != 0:
 					# Bid is valid
 					if bid in range(2, 5):
-						middle = match_pass_buttons.format(bid)
+						session['middle'] = match_pass_buttons.format(bid)
 					# Default an invalid bid to 0
 					else:
 						bid = 0
@@ -72,12 +68,12 @@ def do_action():
 				session['bid'] = bid
 				session['min_bid'] = bid + 1
 				session['bidder'] = session['active_player']
-				print('>>> player {} passes'.format(session['active_player']))
-				msg = '<b>Player {}</b> bid {}.'.format(session['bidder']+1, bid)
+				print('>>> player {} bid {}'.format(session['active_player'], bid))
+				session['log'] = '<b>Player {}</b> bid {}.'.format(session['bidder']+1, bid)
 			# Pass
 			else:
-				print('>>> player {} bid {}'.format(session['active_player'], bid))
-				msg = '<b>Player {}</b> passes.'.format(session['active_player']+1)
+				print('>>> player {} passes'.format(session['active_player']))
+				session['log'] = '<b>Player {}</b> passes.'.format(session['active_player']+1)
 
 			# Prepare for next player
 			next_player(session)
@@ -89,8 +85,8 @@ def do_action():
 
 				print('>>> player {} is forced to bid {}'.format(session['active_player'], session['bid']))
 
-				msg += '<br><b>Player {}</b> is forced to bid {}.'.format(session['bidder']+1, session['bid'])
-				bottom = adv_button
+				session['log'] += '<br><b>Player {}</b> is forced to bid {}.'.format(session['bidder']+1, session['bid'])
+				session['bottom'] = adv_button
 
 				#Prepare for first round
 				session['round'] = 0
@@ -108,15 +104,15 @@ def do_action():
 
 			# Dealer passes
 			if bid == 0:
-				bottom = adv_button
-				msg = '<b>Player {}</b> passes.'.format(session['active_player']+1)
+				session['bottom'] = adv_button
+				session['log'] = '<b>Player {}</b> passes.'.format(session['active_player']+1)
 			# Dealer matches
 			else:
-				msg = '<b>Player {}</b> matches <b>Player {}</b>\'s bid of {}.'.format(session['active_player']+1,
+				session['log'] = '<b>Player {}</b> matches <b>Player {}</b>\'s bid of {}.'.format(session['active_player']+1,
 					                                                                   session['bidder']+1,
 					                                                                   session['bid'])
 				session['bidder'] = session['active_player']
-				bottom = adv_button
+				session['bottom'] = adv_button
 
 			#Prepare for first round
 			session['round'] = 0
@@ -137,8 +133,12 @@ def do_action():
 			# If start of the hand
 			if session['round'] == 0 and session['turn'] == -1:
 				# Log who is leading out
-				msg = '<b>Player {}</b> won the bid and is leading out.'.format(session['bidder']+1)
+				session['log'] = '<b>Player {}</b> won the bid and is leading out.'.format(session['bidder']+1)
 				session['active_player'] = session['bidder']
+
+				# Show adv_button if bot is leading
+				if session['active_player'] != 0:
+					session['bottom'] = adv_button
 
 			# Actual game turns
 			elif session['turn'] > -1 and session['turn'] < session['num_players']:
@@ -148,7 +148,7 @@ def do_action():
 					choice = request.args.get('card', 0, type=int)
 
 					# Enable adv_button
-					bottom = adv_button
+					session['bottom'] = adv_button
 				# Bot's turn
 				else:
 					choice = PB.action(session)
@@ -159,7 +159,7 @@ def do_action():
 				played_card = remove_card(session['hands'][session['active_player']], choice)
 				print('>>> Player {} played the {}.'.format(session['active_player'], card_to_string(played_card)))
 
-				msg += '<b>Player {}</b> played the {}.'.format(session['active_player']+1, card_to_string(played_card))
+				session['log'] += '<b>Player {}</b> played the {}.'.format(session['active_player']+1, card_to_string(played_card))
 
 				# If leading the round
 				if session['turn'] == 0:
@@ -175,7 +175,7 @@ def do_action():
 						print('>>> Player {} sets trump as {}'.format(session['active_player'], suit_to_string(played_card['suit'])))
 						session['trump'] = played_card['suit']
 						session['trump_set'] = True
-						msg += ' Trump is now {}.'.format(suit_to_string(played_card['suit']))
+						session['log'] += ' Trump is now {}.'.format(suit_to_string(played_card['suit']))
 				# Otherwise, check if card beats top
 				else:
 					# Current top is trump
@@ -206,7 +206,7 @@ def do_action():
 								session['taker'] = session['active_player']
 
 				# Move played card to middle, prepare to display
-				push_back(session['middle'], played_card)
+				push_back(session['middle_cards'], played_card)
 
 				# Prepare for next player
 				next_player(session)
@@ -217,7 +217,7 @@ def do_action():
 
 				# Collect trick for taker
 				for card in range(session['num_players']):
-					push_back(session['tricks'][session['taker']], pop_back(session['middle']))
+					push_back(session['tricks'][session['taker']], pop_back(session['middle_cards']))
 
 				session['round_over'] = False
 				session['round'] += 1
@@ -227,16 +227,16 @@ def do_action():
 
 				# If bot will lead next round, show adv_button
 				if session['active_player'] != 0:
-					bottom = adv_button
+					session['bottom'] = adv_button
 
 				# Last round of the hand
 				if session['round'] >= session['hand_size']:
 					# Score hands
 					print('>>> SCORING HANDS')
-					msg += score_hands(session)
+					session['log'] += score_hands(session)
 
 					# Prepare for a new hand
-					bottom = adv_button
+					session['bottom'] = adv_button
 					session['hands_dealt'] = False
 					session['trump_set'] = False
 					session['round'] = -1
@@ -256,10 +256,10 @@ def do_action():
 
 				# Taker takes trick
 				print('>>> Player {} takes the trick'.format(session['taker']))
-				msg += '<br><b>Player {}</b> takes the trick.'.format(session['taker']+1)
+				session['log'] += '<br><b>Player {}</b> takes the trick.'.format(session['taker']+1)
 
 				session['round_over'] = True
-				bottom = adv_button
+				session['bottom'] = adv_button
 
 			print('>>> END OF TURN')
 
@@ -284,36 +284,36 @@ def do_action():
 						card_class = 'trump'
 					else:
 						card_class = ''
-					bottom_hand += card_clickable_html.format(card_class, n, card['suit'], card['value'])
+					session['bottom_hand'] += card_clickable_html.format(card_class, n, card['suit'], card['value'])
 				else:
-					bottom_hand += card_html.format('unclickable', card['suit'], card['value'])
+					session['bottom_hand'] += card_html.format('unclickable', card['suit'], card['value'])
 			# Bot's hand
 			else:
 				# Add card back to be displayed
-				top_hand += card_back
-				# top_hand += card_html.format('unclickable', card['suit'], card['value'])
+				session['top_hand'] += card_back
+				# session['top_hand'] += card_html.format('unclickable', card['suit'], card['value'])
 
 	# Prepare middle cards for display
-	for card in session['middle']['cards']:
+	for card in session['middle_cards']['cards']:
 		if card['suit'] == session['trump']:
 			card_class = 'trump'
 		else:
 			card_class = ''
-		middle += card_html.format(card_class, card['suit'], card['value'])
+		session['middle'] += card_html.format(card_class, card['suit'], card['value'])
 
 	# Human is the dealer
 	if session['dealer'] == 0:
-		top_name = '<b>Player 2</b>: {} points'.format(session['scores'][1])
-		bottom_name = '<b>Player 1</b> (dealer): {} points'.format(session['scores'][0])
+		session['top_name'] = '<b>Player 2</b>: {} points'.format(session['scores'][1])
+		session['bottom_name'] = '<b>Player 1</b> (dealer): {} points'.format(session['scores'][0])
 	# Bot is the dealer
 	else:
-		top_name = '<b>Player 2</b> (dealer): {} points'.format(session['scores'][1])
-		bottom_name = '<b>Player 1</b>: {} points'.format(session['scores'][0])
+		session['top_name'] = '<b>Player 2</b> (dealer): {} points'.format(session['scores'][1])
+		session['bottom_name'] = '<b>Player 1</b>: {} points'.format(session['scores'][0])
 
-	return jsonify(msg=msg,
-		           top_name=top_name,
-		           top_hand=top_hand,
-		           middle=middle,
-		           bottom_hand=bottom_hand,
-		           bottom_name=bottom_name,
-		           bottom=bottom)
+	return jsonify(top_name=session['top_name'],
+		           top_hand=session['top_hand'],
+		           middle=session['middle'],
+		           bottom_hand=session['bottom_hand'],
+		           bottom_name=session['bottom_name'],
+		           bottom=session['bottom'],
+		           log=session['log'])

@@ -20,18 +20,30 @@ def init_gamestate(session):
 	session['trump_set'] = False
 	session['lead_suit'] = 0
 	session['deck'] = new_deck(filled=True, shuffled=True)
-	session['middle'] = new_deck()
+	session['middle_cards'] = new_deck()
 	session['hands'] = []
 	session['hands_dealt'] = False
 	session['tricks'] = []
 	session['scores'] = []
 	session['score_limit'] = 11
 
+	reset_returns(session)
+
 	# create hand, trick pile, and score for each player
 	for player in range(session['num_players']):
 		session['hands'].append(new_deck())
 		session['tricks'].append(new_deck())
 		session['scores'].append(0)
+
+# Reset HTML return strings
+def reset_returns(session):
+	session['top_name'] = ''
+	session['top_hand'] = ''
+	session['middle'] = ''
+	session['bottom_hand'] = ''
+	session['bottom_name'] = ''
+	session['bottom'] = ''
+	session['log'] = ''
 
 # Advance active_player, looping if necessary
 def next_player(session):
