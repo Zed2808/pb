@@ -1,5 +1,6 @@
 from collections import defaultdict
 from .deck import *
+from .html import *
 
 # Initialize the gamestate session variables
 def init_gamestate(session):
@@ -44,6 +45,30 @@ def reset_returns(session):
 	session['bottom_name'] = ''
 	session['bottom'] = ''
 	session['log'] = ''
+
+# Deal hands to players
+def deal_hands(session):
+	# Make sure players don't have cards yet
+	if not session['hands_dealt']:
+		# Deal hand to each player
+		print('>>> Dealing hands')
+		for player in range(session['num_players']):
+			# Deal cards up to hand_size
+			for n in range(session['hand_size']):
+				# Get card from the deck
+				card = pop_back(session['deck'])
+
+				# Add card to player's hand
+				push_back(session['hands'][player], card)
+
+		# If human is bidding first, show bid buttons
+		if session['active_player'] == 0:
+			session['middle'] = bid_buttons
+		else:
+			session['bottom'] = adv_button
+
+		session['log'] += '<b>Player {}</b> bids first.'.format(session['active_player']+1)
+		session['hands_dealt'] = True
 
 # Advance active_player, looping if necessary
 def next_player(session):

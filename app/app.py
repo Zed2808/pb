@@ -19,30 +19,10 @@ def index():
 def do_action():
 	reset_returns(session)
 
-	# Make sure players have cards
-	if not session['hands_dealt']:
-		# Deal hand to each player
-		print('>>> Dealing hands')
-		for player in range(session['num_players']):
-			# Deal cards up to hand_size
-			for n in range(session['hand_size']):
-				# Get card from the deck
-				card = pop_back(session['deck'])
-
-				# Add card to player's hand
-				push_back(session['hands'][player], card)
-
-		# If human is bidding first, show bid buttons
-		if session['active_player'] == 0:
-			session['middle'] = bid_buttons
-		else:
-			session['bottom'] = adv_button
-
-		session['log'] += '<b>Player {}</b> bids first.'.format(session['active_player']+1)
-		session['hands_dealt'] = True
+	deal_hands(session)
 
 	# Bidding round
-	elif session['round'] == -1:
+	if session['round'] == -1:
 		# As long as we haven't reached the dealer yet
 		if session['active_player'] != session['dealer']:
 			print('>>> dealer not bidding')
