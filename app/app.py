@@ -19,7 +19,9 @@ def index():
 def do_action():
 	reset_returns(session)
 
-	deal_hands(session)
+	# Make sure players don't have cards yet
+	if not session['hands_dealt']:
+		deal_hands(session)
 
 	# Bidding round
 	if session['round'] == -1:
@@ -66,6 +68,7 @@ def do_action():
 				print('>>> player {} is forced to bid {}'.format(session['active_player'], session['bid']))
 
 				session['log'] += '<br><b>Player {}</b> is forced to bid {}.'.format(session['bidder']+1, session['bid'])
+				session['middle'] = ''
 				session['bottom'] = adv_button
 
 				#Prepare for first round
@@ -273,22 +276,9 @@ def do_action():
 				session['top_hand'] += card_back
 				# session['top_hand'] += card_html.format('unclickable', card['suit'], card['value'])
 
-	# Prepare middle cards for display
-	for card in session['middle_cards']['cards']:
-		if card['suit'] == session['trump']:
-			card_class = 'trump'
-		else:
-			card_class = ''
-		session['middle'] += card_html.format(card_class, card['suit'], card['value'])
+	prepare_middle(session)
 
-	# Human is the dealer
-	if session['dealer'] == 0:
-		session['top_name'] = '<b>Player 2</b>: {} points'.format(session['scores'][1])
-		session['bottom_name'] = '<b>Player 1</b> (dealer): {} points'.format(session['scores'][0])
-	# Bot is the dealer
-	else:
-		session['top_name'] = '<b>Player 2</b> (dealer): {} points'.format(session['scores'][1])
-		session['bottom_name'] = '<b>Player 1</b>: {} points'.format(session['scores'][0])
+	set_names(session)
 
 	return jsonify(top_name=session['top_name'],
 		           top_hand=session['top_hand'],

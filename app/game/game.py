@@ -48,27 +48,25 @@ def reset_returns(session):
 
 # Deal hands to players
 def deal_hands(session):
-	# Make sure players don't have cards yet
-	if not session['hands_dealt']:
-		# Deal hand to each player
-		print('>>> Dealing hands')
-		for player in range(session['num_players']):
-			# Deal cards up to hand_size
-			for n in range(session['hand_size']):
-				# Get card from the deck
-				card = pop_back(session['deck'])
+	# Deal hand to each player
+	print('>>> Dealing hands')
+	for player in range(session['num_players']):
+		# Deal cards up to hand_size
+		for n in range(session['hand_size']):
+			# Get card from the deck
+			card = pop_back(session['deck'])
 
-				# Add card to player's hand
-				push_back(session['hands'][player], card)
+			# Add card to player's hand
+			push_back(session['hands'][player], card)
 
-		# If human is bidding first, show bid buttons
-		if session['active_player'] == 0:
-			session['middle'] = bid_buttons
-		else:
-			session['bottom'] = adv_button
+	# If human is bidding first, show bid buttons
+	if session['active_player'] == 0:
+		session['middle'] = bid_buttons
+	else:
+		session['bottom'] = adv_button
 
-		session['log'] += '<b>Player {}</b> bids first.'.format(session['active_player']+1)
-		session['hands_dealt'] = True
+	session['log'] += '<b>Player {}</b> bids first.'.format(session['active_player']+1)
+	session['hands_dealt'] = True
 
 # Advance active_player, looping if necessary
 def next_player(session):
@@ -177,3 +175,23 @@ def score_hands(session):
 		session['scores'][player] += hand_scores[player]
 
 	return msg
+
+# Prepare middle cards for display
+def prepare_middle(session):
+	for card in session['middle_cards']['cards']:
+		if card['suit'] == session['trump']:
+			card_class = 'trump'
+		else:
+			card_class = ''
+		session['middle'] += card_html.format(card_class, card['suit'], card['value'])
+
+# Set the name fields to return to display
+def set_names(session):
+	# Human is the dealer
+	if session['dealer'] == 0:
+		session['top_name'] = '<b>Player 2</b>: {} points'.format(session['scores'][1])
+		session['bottom_name'] = '<b>Player 1</b> (dealer): {} points'.format(session['scores'][0])
+	# Bot is the dealer
+	else:
+		session['top_name'] = '<b>Player 2</b> (dealer): {} points'.format(session['scores'][1])
+		session['bottom_name'] = '<b>Player 1</b>: {} points'.format(session['scores'][0])
