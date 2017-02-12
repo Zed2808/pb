@@ -1,4 +1,37 @@
 from collections import defaultdict
+from .deck import *
+
+# Initialize the gamestate session variables
+def init_gamestate(session):
+	session['num_players'] = 2
+	session['hand_size'] = 6
+	session['dealer'] = 0
+	session['active_player'] = 1
+	session['min_bid'] = 2
+	session['bid'] = 0
+	session['bidder'] = -1
+	session['hand_over'] = False
+	session['round'] = -1
+	session['round_over'] = False
+	session['turn'] = -1
+	session['taker'] = -1
+	session['top_card'] = new_card()
+	session['trump'] = 0
+	session['trump_set'] = False
+	session['lead_suit'] = 0
+	session['deck'] = new_deck(filled=True, shuffled=True)
+	session['middle'] = new_deck()
+	session['hands'] = []
+	session['hands_dealt'] = False
+	session['tricks'] = []
+	session['scores'] = []
+	session['score_limit'] = 11
+
+	# create hand, trick pile, and score for each player
+	for player in range(session['num_players']):
+		session['hands'].append(new_deck())
+		session['tricks'].append(new_deck())
+		session['scores'].append(0)
 
 # Advance active_player, looping if necessary
 def next_player(session):

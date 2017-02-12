@@ -2,6 +2,7 @@ from flask import Flask, session, render_template, request, jsonify
 from .game.deck import *
 from .game.game import *
 from .game.pb import *
+from .game.html import *
 
 app = Flask(__name__)
 app.secret_key = 'SuperSecretKey'
@@ -10,66 +11,12 @@ app.secret_key = 'SuperSecretKey'
 @app.route('/index')
 def index():
 	# Initialize the game state
-	session['num_players'] = 2
-	session['hand_size'] = 6
-	session['dealer'] = 0
-	session['active_player'] = 1
-	session['min_bid'] = 2
-	session['bid'] = 0
-	session['bidder'] = -1
-	session['hand_over'] = False
-	session['round'] = -1
-	session['round_over'] = False
-	session['turn'] = -1
-	session['taker'] = -1
-	session['top_card'] = new_card()
-	session['trump'] = 0
-	session['trump_set'] = False
-	session['lead_suit'] = 0
-	session['deck'] = new_deck(filled=True, shuffled=True)
-	session['middle'] = new_deck()
-	session['hands'] = []
-	session['hands_dealt'] = False
-	session['tricks'] = []
-	session['scores'] = []
-	session['score_limit'] = 11
-
-	# create hand, trick pile, and score for each player
-	for player in range(session['num_players']):
-		session['hands'].append(new_deck())
-		session['tricks'].append(new_deck())
-		session['scores'].append(0)
+	init_gamestate(session)
 
 	return render_template('index.html')
 
 @app.route('/do_action')
 def do_action():
-	# Button for advancing non-player action
-	adv_button = '<button id="adv_button" type="button">Next</button>'
-
-	# Buttons for bidding
-	bid_buttons = '''
-		<table>
-			<tr>
-				<td><button class="bid_button" type="button" value="0">Pass</button></td>
-				<td><button class="bid_button" type="button" value="2">2</button></td>
-				<td><button class="bid_button" type="button" value="3">3</button></td>
-				<td><button class="bid_button" type="button" value="4">4</button></td>
-			</tr>
-		</table>'''
-	match_pass_buttons = '''
-		<table>
-			<tr>
-				<td><button class="bid_button" type="button" value="0">Pass</button></td>
-				<td><button class="bid_button" type="button" value="{0}">Match ({0})</button></td>
-			</tr>
-		</table>'''
-
-	# HTML for displaying a card image
-	card_clickable_html = '<input type="image" class="card clickable {}" value="{}" src="static/img/cards/{}_{}.png">'
-	card_html = '<img class="card {}" src="static/img/cards/{}_{}.png">'
-	card_back = '<img class="card" src="static/img/cards/back.png">'
-
 	# Default states for middle and bottom
 	msg = ''
 	top_hand = ''
