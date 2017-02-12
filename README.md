@@ -38,6 +38,6 @@ cd pb
 ## Running
 **Linux:** ```./run.py```
 
-**Windows:** ```flask\Scripts\python.exe run.py```
+**Windows:** ```run.bat```
 
 Visit [http://localhost:5000](http://localhost:5000) in your browser.
