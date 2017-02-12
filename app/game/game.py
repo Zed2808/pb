@@ -1,3 +1,4 @@
+from flask import request
 from collections import defaultdict
 from .deck import *
 from .html import *
@@ -12,7 +13,6 @@ def init_gamestate(session):
 	session['min_bid'] = 2
 	session['bid'] = 0
 	session['bidder'] = -1
-	session['hand_over'] = False
 	session['round'] = -1
 	session['round_over'] = False
 	session['turn'] = -1
