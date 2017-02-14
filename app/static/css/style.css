@@ -37,8 +37,7 @@ p {
 	width: auto;
 	height: 100%;
 	filter: drop-shadow(0px 2px 2px black);
-	margin-left: 4px;
-	margin-right: 4px;
+	padding: 4px;
 }
 
 .trump {
