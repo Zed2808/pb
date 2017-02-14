@@ -88,11 +88,21 @@ p {
 	height: 100%;
 	font-size: 300%;
 	font-family: Roboto Condensed;
+	border: none;
+	background-color: #11c042;
+	color: white;
+	border-radius: 8px;
+	transition-duration: 0.2s;
 }
 
 @media only screen and (max-width: 1080px) {
 	#adv_button {
 		width: 100%;
 		font-size: 600%;
+		border-radius: 0px;
 	}
+}
+
+#adv_button:hover {
+	background-color: #2bdb5c;
 }
