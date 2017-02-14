@@ -4,39 +4,30 @@
 <script type=text/javascript src="{{ url_for('static', filename='js/scripts.js') }}"></script>
 
 <head>
-<link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
-<link rel="stylesheet" type="text/css" href="static/css/cards.css">
+	<link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
 
 	<title>pb - Pitch Bot</title>
 </head>
 
 <body>
-	<table id="body_table">
-		<tr>
-			<td id="top_name"><b>Player 2</b></td>
-		</tr>
-		<tr>
-			<td id="top_hand" height="250px"></td>
-		</tr>
-		<tr>
-			<td id="middle" height="250px"></td>
-		</tr>
-		<tr>
-			<td id="bottom_hand" height="250px"></td>
-		</tr>
-		<tr>
-			<td id="bottom_name"><b>Player 1</b></td>
-		</tr>
-		<tr>
-			<td id="bottom">
-				{% if not session['hands_dealt'] %}
-				<button id="adv_button" type="button">Deal</button>
-				{% endif %}
-			</td>
-		</tr>
-		<tr>
-			<td id="log"></td>
-		</tr>
-	</table>
+	<div class="hand" id="top_hand"></div>
+
+	<div class="name" id="top_name"><b>Player 2</b></div>
+
+	<div id="log"></div>
+
+	<div class="hand" id="middle"></div>
+
+	<div class="name" id="bottom_name"><b>Player 1</b></div>
+
+	<div class="hand" id="bottom_hand"></div>
+
+	<div id="bottom">
+		{% if not session['hands_dealt'] %}
+		<button id="adv_button" type="button">Deal</button>
+		{% endif %}
+	</div>
+
 </body>
 </html>

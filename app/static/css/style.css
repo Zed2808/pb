@@ -1,0 +1,58 @@
+.name {
+	width: 100%;
+	text-align: center;
+	margin-top: 15px;
+	margin-bottom:15px;
+}
+
+.hand {
+	width: 100%;
+	height: 15%;
+	text-align: center;
+	position: relative;
+}
+
+.card {
+	width: auto;
+	height: 100%;
+}
+
+.trump {
+	outline: solid yellow;
+}
+
+.unclickable {
+	opacity: 0.5;
+}
+
+#middle {
+	height: 25%;
+	position: fixed;
+	bottom: 45%;
+}
+
+#log {
+	text-align: center;
+}
+
+#bottom_name {
+	position: fixed;
+	bottom: 25%;
+}
+
+#bottom_hand {
+	position: fixed;
+	bottom: 10%;
+}
+
+#bottom {
+	width: 100%;
+	height: 10%;
+	position: fixed;
+	bottom: 0%;
+}
+
+#adv_button {
+	width: 100%;
+	height: 100%;
+}
