@@ -44,8 +44,14 @@ p {
 	filter: drop-shadow(0px 0px 8px yellow);
 }
 
+.clickable:hover {
+	transform: translateY(-10px);
+	transition-duration: 0.1s;
+}
+
 .unclickable {
-	opacity: 0.5;
+	opacity: 0.7;
+	cursor: not-allowed;
 }
 
 #middle {
