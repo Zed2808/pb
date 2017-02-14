@@ -1,5 +1,4 @@
 p {
-	font-size: 150%;
 	font-family: Roboto Condensed;
 	margin: 10px;
 }
@@ -7,6 +6,7 @@ p {
 .name {
 	width: 100%;
 	text-align: center;
+	font-size: 200%;
 }
 
 .hand {
@@ -37,6 +37,7 @@ p {
 
 #log {
 	text-align: center;
+	font-size: 150%;
 }
 
 #bottom_name {
@@ -52,13 +53,20 @@ p {
 #bottom {
 	width: 100%;
 	height: 10%;
+	text-align: center;
 	position: fixed;
 	bottom: 0%;
 }
 
 #adv_button {
-	width: 100%;
+	width: 15%;
 	height: 100%;
 	font-size: 300%;
 	font-family: Roboto Condensed;
+}
+
+@media only screen and (max-width: 1080px) {
+	#adv_button {
+		width: 100%;
+	}
 }
