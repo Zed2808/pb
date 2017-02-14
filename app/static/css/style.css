@@ -1,8 +1,11 @@
+p {
+	font-size: 150%;
+	margin: 10px;
+}
+
 .name {
 	width: 100%;
 	text-align: center;
-	margin-top: 15px;
-	margin-bottom:15px;
 }
 
 .hand {
@@ -55,4 +58,5 @@
 #adv_button {
 	width: 100%;
 	height: 100%;
+	font-size: 300%;
 }
