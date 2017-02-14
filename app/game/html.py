@@ -3,21 +3,13 @@ adv_button = '<button id="adv_button" type="button">Next</button>'
 
 # Buttons for bidding
 bid_buttons = '''
-	<table>
-		<tr>
-			<td><button class="bid_button" type="button" value="0">Pass</button></td>
-			<td><button class="bid_button" type="button" value="2">2</button></td>
-			<td><button class="bid_button" type="button" value="3">3</button></td>
-			<td><button class="bid_button" type="button" value="4">4</button></td>
-		</tr>
-	</table>'''
+	<button class="bid_button" type="button" value="0">Pass</button>
+	<button class="bid_button" type="button" value="2">2</button>
+	<button class="bid_button" type="button" value="3">3</button>
+	<button class="bid_button" type="button" value="4">4</button>'''
 match_pass_buttons = '''
-	<table>
-		<tr>
-			<td><button class="bid_button" type="button" value="0">Pass</button></td>
-			<td><button class="bid_button" type="button" value="{0}">Match ({0})</button></td>
-		</tr>
-	</table>'''
+	<button class="bid_button" type="button" value="0">Pass</button><
+	<button class="bid_button" type="button" value="{0}">Match ({0})</button>'''
 
 # HTML for displaying a card image
 card_clickable_html = '<input type="image" class="card clickable {}" value="{}" src="static/img/cards/{}_{}.png">'
