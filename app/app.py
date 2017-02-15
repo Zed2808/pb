@@ -23,7 +23,7 @@ def do_action():
 		deal_hands(session)
 
 	# Bidding round
-	if session['round'] == -1:
+	elif session['round'] == -1:
 		# Active player places their bid
 		bidding_round(session)
 
