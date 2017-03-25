@@ -62,6 +62,9 @@ def reset_returns(session):
 
 # Deal hands to players
 def deal_hands(session):
+	# Re-make the deck before dealing new hands
+	session['deck'] = new_deck(filled=True, shuffled=True)
+
 	# Deal hand to each player
 	print('>>> Dealing hands')
 	for player in range(session['num_players']):
