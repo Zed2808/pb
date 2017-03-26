@@ -12,7 +12,7 @@ def index():
 	# Initialize the game state
 	create_new_game(games)
 
-	return render_template('index.html')
+	return render_template('index.html', game=games[0])
 
 @app.route('/do_action/<int:game_id>', methods=['GET', 'POST'])
 def do_action(game_id):
