@@ -1,5 +1,6 @@
 from flask import request
 from collections import defaultdict
+import uuid
 from .deck import *
 from .html import *
 from .pb import *
@@ -7,7 +8,7 @@ from .pb import *
 # Initialize the gamestate and add it to the list of games, return the created game
 def create_new_game(games):
 	game = {
-		'id': 0,
+		'id': uuid.uuid4(),
 		'num_players': 2,
 		'hand_size': 6,
 		'dealer': 0,
@@ -32,12 +33,6 @@ def create_new_game(games):
 		'scores': [],
 		'score_limit': 11
 	}
-
-	# Set unique game id
-	if len(games) == 0:
-		game['id'] = 0
-	else:
-		game['id'] = games[-1]['id'] + 1
 
 	# Create hand, trick pile, and score for each player
 	for player in range(game['num_players']):
