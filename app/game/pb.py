@@ -1,4 +1,4 @@
 class PB:
 	@staticmethod
-	def action(session):
+	def action(game):
 		return 0

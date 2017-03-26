@@ -25,7 +25,7 @@
 	<div class="hand" id="bottom_hand"></div>
 
 	<div id="bottom">
-		{% if not session['hands_dealt'] %}
+		{% if not game['hands_dealt'] %}
 		<button id="adv_button" type="button">Deal</button>
 		{% endif %}
 	</div>

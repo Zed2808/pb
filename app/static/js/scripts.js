@@ -1,6 +1,6 @@
 $(document).ready(function() {
 	$('#middle').on('click', '.bid_button', function() {
-		$.getJSON('/do_action', {
+		$.getJSON('/do_action/0', {
 			bid: $(this).attr('value')
 		}, function(data) {
 			$('#top_name').html(data.top_name);
@@ -11,11 +11,10 @@ $(document).ready(function() {
 			$('#bottom').html(data.bottom);
 			$('#log').html(data.log);
 		});
-		return false;
 	});
 
 	$('#bottom').on('click', '#adv_button', function() {
-		$.getJSON('/do_action', {},
+		$.getJSON('/do_action/0', {},
 			function(data) {
 				$('#top_name').html(data.top_name);
 				$('#top_hand').html(data.top_hand);
@@ -29,7 +28,7 @@ $(document).ready(function() {
 	});
 
 	$('#bottom_hand').on('click', '.clickable', function() {
-		$.getJSON('/do_action', {
+		$.getJSON('/do_action/0', {
 			card: $(this).val()
 		}, function(data) {
 			$('#top_name').html(data.top_name);

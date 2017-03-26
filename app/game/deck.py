@@ -63,7 +63,7 @@ def remove_card(deck, index):
 	return card
 
 # Sort deck (trump, then lead, then others)
-def sort_deck(deck, session):
+def sort_deck(deck, game):
 	# Create list of empty lists, one for each suit
 	suit_lists = [[] for suit in range(4)]
 
@@ -80,34 +80,34 @@ def sort_deck(deck, session):
 		suit_lists[suit].sort(key=lambda card: card['value'], reverse=True)
 
 	# Make sure trump comes first
-	deck['cards'] += suit_lists[session['trump']]
+	deck['cards'] += suit_lists[game['trump']]
 
 	# Only add lead cards if lead != trump
-	if session['lead_suit'] != session['trump']:
-		deck['cards'] += suit_lists[session['lead_suit']]
+	if game['lead_suit'] != game['trump']:
+		deck['cards'] += suit_lists[game['lead_suit']]
 
 	# Add all other cards back to the deck
 	for suit in range(4):
-		if suit != session['trump'] and suit != session['lead_suit']:
+		if suit != game['trump'] and suit != game['lead_suit']:
 			deck['cards'] += suit_lists[suit]
 
 # Return number of playable cards in the hand
-def playable_cards(deck, session):
+def playable_cards(deck, game):
 	# No one's turn yet, no cards playable
-	if session['turn'] == -1:
+	if game['turn'] == -1:
 		return 0
 	# If first turn, all cards are playable
-	elif session['turn'] == 0:
-		return session['hand_size']
+	elif game['turn'] == 0:
+		return game['hand_size']
 
 	num_trump = 0
 	num_lead = 0
 
 	# Count number of trump and lead suit cards
 	for card in deck['cards']:
-		if card['suit'] == session['lead_suit']:
+		if card['suit'] == game['lead_suit']:
 			num_lead += 1
-		elif card['suit'] == session['trump']:
+		elif card['suit'] == game['trump']:
 			num_trump += 1
 
 	# If no lead suit cards
