@@ -4,7 +4,7 @@ from .deck import *
 from .html import *
 from .pb import *
 
-# Initialize the gamestate and add it to the list of games
+# Initialize the gamestate and add it to the list of games, return the created game
 def create_new_game(games):
 	game = {
 		'id': 0,
@@ -50,6 +50,8 @@ def create_new_game(games):
 
 	# Append newly created game to list of games
 	games.append(game)
+
+	return game
 
 # Advance active_player, looping if necessary
 def next_player(game):
