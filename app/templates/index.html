@@ -1,50 +1,76 @@
 <html>
 
-<script type=text/javascript src="{{ url_for('static', filename='jquery/jquery-3.1.1.min.js') }}"></script>
+<script type=text/javascript src="{{ url_for('static', filename='libs/jquery-3.2.0.min.js') }}"></script>
+<script type=text/javascript src="{{ url_for('static', filename='libs/socket.io.min.js') }}"></script>
+
 <script type=text/javascript>
-$(document).ready(function() {
-	$('#middle').on('click', '.bid_button', function() {
-		$.getJSON('/do_action/{{ game['id'] }}', {
-			bid: $(this).attr('value')
-		}, function(data) {
-			$('#top_name').html(data.top_name);
-			$('#top_hand').html(data.top_hand);
-			$('#middle').html(data.middle);
-			$('#bottom_hand').html(data.bottom_hand);
-			$('#bottom_name').html(data.bottom_name);
-			$('#bottom').html(data.bottom);
-			$('#log').html(data.log);
-		});
-	});
+	$(document).ready(function() {
+		// Connect to the SocketIO server
+		var socket = io.connect();
+		var game_id = '';
 
-	$('#bottom').on('click', '#adv_button', function() {
-		$.getJSON('/do_action/{{ game['id'] }}', {},
-			function(data) {
-				$('#top_name').html(data.top_name);
-				$('#top_hand').html(data.top_hand);
-				$('#middle').html(data.middle);
-				$('#bottom_hand').html(data.bottom_hand);
-				$('#bottom_name').html(data.bottom_name);
-				$('#bottom').html(data.bottom);
-				$('#log').html(data.log);
+		// When the serve confirms connection with a game code, join that game
+		socket.on('connection_made', function(msg) {
+			game_id = msg.game_id;
+			socket.emit('join', {game_id: game_id});
+		});
+
+		// Confirm to player that they have joined a game
+		socket.on('new_game', function(msg) {
+			$('#log').html('<p>You have joined game <b>' + game_id + '</b></p>');
+		});
+
+		// Event handler for game updates
+		socket.on('update', function(msg) {
+			// Check if property exists in message to allow
+			// updating of only some fields at a time
+			if(msg.hasOwnProperty('top_name')) {
+				$('#top_name').html(msg.top_name);
 			}
-		);
-	});
 
-	$('#bottom_hand').on('click', '.clickable', function() {
-		$.getJSON('/do_action/{{ game['id'] }}', {
-			card: $(this).val()
-		}, function(data) {
-			$('#top_name').html(data.top_name);
-			$('#top_hand').html(data.top_hand);
-			$('#middle').html(data.middle);
-			$('#bottom_hand').html(data.bottom_hand);
-			$('#bottom_name').html(data.bottom_name);
-			$('#bottom').html(data.bottom);
-			$('#log').html(data.log);
+			if(msg.hasOwnProperty('top_hand')) {
+				$('#top_hand').html(msg.top_hand);
+			}
+
+			if(msg.hasOwnProperty('middle')) {
+				$('#middle').html(msg.middle);
+			}
+
+			if(msg.hasOwnProperty('bottom_hand')) {
+				$('#bottom_hand').html(msg.bottom_hand);
+			}
+
+			if(msg.hasOwnProperty('bottom_name')) {
+				$('#bottom_name').html(msg.bottom_name);
+			}
+
+			if(msg.hasOwnProperty('bottom')) {
+				$('#bottom').html(msg.bottom);
+			}
+
+			if(msg.hasOwnProperty('log')) {
+				$('#log').html(msg.log);
+			}
+		});
+
+		// Handle deal button
+		$('#bottom').on('click', '#deal', function() {
+			socket.emit('deal', {game_id: game_id});
+			return false;
+		});
+
+		// Handle bidding buttons
+		$('#middle').on('click', '.bid_button', function() {
+			socket.emit('bid', {game_id: game_id, data: $(this).val()});
+			return false;
+		});
+
+		// Handle playing a card
+		$('#bottom_hand').on('click', '.clickable', function() {
+			socket.emit('play_card', {game_id: game_id, data: $(this).val()});
+			return false;
 		});
 	});
-});
 </script>
 
 <head>
@@ -69,9 +95,7 @@ $(document).ready(function() {
 	<div class="hand" id="bottom_hand"></div>
 
 	<div id="bottom">
-		{% if not game['hands_dealt'] %}
-		<button id="adv_button" type="button">Deal</button>
-		{% endif %}
+		<button id="deal" type="button">Deal</button>
 	</div>
 
 </body>

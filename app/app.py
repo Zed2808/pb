@@ -1,40 +1,66 @@
-from flask import Flask, render_template, jsonify, abort
-from .game.game import *
+from flask import Flask, render_template, jsonify
+from flask_socketio import SocketIO, emit, join_room
+from game.game import *
 
 app = Flask(__name__)
 app.secret_key = 'SuperSecretKey'
+socketio = SocketIO(app)
 
 games = []
 
 @app.route('/')
-@app.route('/index')
 def index():
-	# Initialize the game state
-	game = create_new_game(games)
+	return render_template('index.html')
 
-	return render_template('index.html', game=game)
+# On client connection, generate a game ID for them and send it back
+@socketio.on('connect')
+def connect():
+	print('>>> User connected')
 
-@app.route('/do_action/<int:game_id>', methods=['GET', 'POST'])
-def do_action(game_id):
-	# Get game with ID = game_id
-	game = [game for game in games if game['id'] == game_id]
+	# Generate game code
+	game_id = new_game_id()
+	emit('connection_made', {'game_id': game_id})
 
-	# If game with game_id does not exist, return 404
-	if len(game) == 0:
-		abort(404)
+@socketio.on('disconnect')
+def disconnect():
+	print('>>> User disconnected')
 
-	game = game[0]
+# When player joins a room, create a new game if it doesn't already exist
+@socketio.on('join')
+def join(msg):
+	join_room(msg['game_id'])
 
-	# Strings to return to display are reset to empty
-	reset_returns(game)
+	# Get game if it exists already
+	game = get_game(games, msg['game_id'])
 
-	# Make sure players don't have cards yet
+	# If game does not yet exist, create it
+	if game is None:
+		game = create_new_game(games, msg['game_id'])
+
+	emit('new_game', {'game_id': game['id']})
+
+@socketio.on('deal')
+def deal(msg):
+	game = get_game(games, msg['game_id'])
+
+	# Only deal hands if hands have not been dealt yet this round
 	if not game['hands_dealt']:
-		# Full hands are randomly dealt to each player
 		deal_hands(game)
 
+	emit('update',
+		{'middle': game['middle'],
+		 'bottom': game['bottom'],
+		 'log': game['log']},
+		room=game['id'])
+
+@socketio.on('bid')
+def bid(msg):
+	game = get_game(games, msg['game_id'])
+
+@socketio.on('action')
+def do_action(msg):
 	# Bidding round
-	elif game['round'] == -1:
+	if game['round'] == -1:
 		# Active player places their bid
 		bidding_round(game)
 
@@ -62,10 +88,13 @@ def do_action(game_id):
 
 	prepare_names(game)
 
-	return jsonify(top_name=game['top_name'],
-		           top_hand=game['top_hand'],
-		           middle=game['middle'],
-		           bottom_hand=game['bottom_hand'],
-		           bottom_name=game['bottom_name'],
-		           bottom=game['bottom'],
-		           log=game['log'])
+	emit('update', jsonify(top_name=game['top_name'],
+				           top_hand=game['top_hand'],
+				           middle=game['middle'],
+				           bottom_hand=game['bottom_hand'],
+				           bottom_name=game['bottom_name'],
+				           bottom=game['bottom'],
+				           log=game['log']))
+
+if __name__ == '__main__':
+	socketio.run(app, debug=True)

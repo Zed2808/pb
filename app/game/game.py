@@ -1,14 +1,14 @@
 from flask import request
 from collections import defaultdict
-import uuid
+import random, string
 from .deck import *
 from .html import *
 from .pb import *
 
 # Initialize the gamestate and add it to the list of games, return the created game
-def create_new_game(games):
+def create_new_game(games, game_id):
 	game = {
-		'id': uuid.uuid4(),
+		'id': game_id,
 		'num_players': 2,
 		'hand_size': 6,
 		'dealer': 0,
@@ -47,6 +47,21 @@ def create_new_game(games):
 	games.append(game)
 
 	return game
+
+# Generate new 4 letter game ID
+def new_game_id():
+	game_id = ''
+	for x in range(4):
+		game_id += random.choice(string.ascii_uppercase)
+
+	return game_id
+
+# Return game given its game ID
+def get_game(games, game_id):
+	game = [game for game in games if game['id'] == game_id]
+	if len(game) == 0:
+		return None
+	return game[0]
 
 # Advance active_player, looping if necessary
 def next_player(game):

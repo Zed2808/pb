@@ -89,7 +89,7 @@ p {
 	bottom: 0%;
 }
 
-#adv_button {
+#deal {
 	width: 15%;
 	height: 100%;
 	font-size: 300%;
@@ -102,14 +102,14 @@ p {
 }
 
 @media only screen and (max-width: 1080px) {
-	#adv_button {
+	#deal {
 		width: 100%;
 		font-size: 600%;
 		border-radius: 0px;
 	}
 }
 
-#adv_button:hover {
+#deal:hover {
 	background-color: #2bdb5c;
 }
 
