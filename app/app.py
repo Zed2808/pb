@@ -17,25 +17,28 @@ def index():
 def connect():
 	print('>>> User connected')
 
-	# Generate game code
-	game_id = new_game_id()
-	emit('connection_made', {'game_id': game_id})
-
 @socketio.on('disconnect')
 def disconnect():
 	print('>>> User disconnected')
 
 # When player joins a room, create a new game if it doesn't already exist
 @socketio.on('join')
-def join(msg):
-	join_room(msg['game_id'])
+def join(msg={'game_id': ''}):
+	print(f'>>> msg: {msg}')
+	# Generate new game id if not given one
+	if msg['game_id'] == '':
+		game_id = new_game_id()
+	else:
+		game_id = msg['game_id']
+
+	join_room(game_id)
 
 	# Get game if it exists already
-	game = get_game(games, msg['game_id'])
+	game = get_game(games, game_id)
 
 	# If game does not yet exist, create it
 	if game is None:
-		game = create_new_game(games, msg['game_id'])
+		game = create_new_game(games, game_id)
 
 	emit('new_game', {'game_id': game['id']})
 

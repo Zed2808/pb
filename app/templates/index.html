@@ -7,16 +7,24 @@
 	$(document).ready(function() {
 		// Connect to the SocketIO server
 		var socket = io.connect();
-		var game_id = '';
+		var game_id;
 
-		// When the serve confirms connection with a game code, join that game
-		socket.on('connection_made', function(msg) {
-			game_id = msg.game_id;
-			socket.emit('join', {game_id: game_id});
+		// When connection is made to the server
+		socket.on('connect', function() {
+			// Prompt user for existing game code, if none provided, create a new game
+			game_id = prompt("Enter a game code to join or create a new game with that code.\nLeave blank or press cancel to create a new game.");
+
+			// Send game_id if entered, otherwise send empty string
+			if(game_id != null) {
+				socket.emit('join', {game_id: game_id});
+			} else {
+				socket.emit('join', {game_id: ''});
+			}
 		});
 
 		// Confirm to player that they have joined a game
 		socket.on('new_game', function(msg) {
+			game_id = msg.game_id;
 			$('#log').html('<p>You have joined game <b>' + game_id + '</b></p>');
 		});
 
