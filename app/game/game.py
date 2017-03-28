@@ -101,12 +101,6 @@ def deal_hands(game):
 			# Add card to player's hand
 			push_back(game['hands'][player], card)
 
-	# If human is bidding first, show bid buttons
-	if game['active_player'] == 0:
-		game['middle'] = bid_buttons
-	else:
-		game['bottom'] = adv_button
-
 	game['log'] += '<p><b>Player {}</b> bids first.</p>'.format(game['active_player']+1)
 	game['hands_dealt'] = True
 
@@ -424,9 +418,15 @@ def score_hands(game):
 	return msg
 
 # Prepare hands for display
-def prepare_hands(game):
+def prepare_hands(game, client):
+	# Hands ready for display
+	hands = {}
+
 	# Prepare hands for display
 	for player in range(game['num_players']):
+		# Create empty placeholder for player's hand
+		hands[player] = ''
+
 		# Sort hands
 		sort_deck(game['hands'][player], game)
 
@@ -437,23 +437,25 @@ def prepare_hands(game):
 		for n in range(len(game['hands'][player]['cards'])):
 			card = game['hands'][player]['cards'][n]
 
-			# If human's hand
-			if player == 0:
-				# If human about to go, card is playable, round is not over, and round is not bidding round, make cards clickable
-				if game['active_player'] == 0 and n in range(playable) and game['round_over'] == False and game['round'] > -1:
+			# If client's hand
+			if player == client:
+				# If client about to go, card is playable, round is not over, and round is not bidding round, make cards clickable
+				if game['active_player'] == client and n in range(playable) and game['round_over'] == False and game['round'] > -1:
 					# If card is trump and there is a trump
 					if card['suit'] == game['trump'] and game['trump_set']:
 						card_class = 'trump'
 					else:
 						card_class = ''
-					game['bottom_hand'] += card_clickable_html.format(card_class, n, card['suit'], card['value'])
+					hands[player] += card_clickable_html.format(card_class, n, card['suit'], card['value'])
 				else:
-					game['bottom_hand'] += card_html.format('unclickable', card['suit'], card['value'])
+					hands[player] += card_html.format('unclickable', card['suit'], card['value'])
 			# Bot's hand
 			else:
 				# Add card back to be displayed
-				game['top_hand'] += card_back
-				# game['top_hand'] += card_html.format('unclickable', card['suit'], card['value'])
+				hands[player] += card_back
+				# hands[player] += card_html.format('unclickable', card['suit'], card['value'])
+
+	return hands
 
 # Prepare middle cards for display
 def prepare_middle(game):

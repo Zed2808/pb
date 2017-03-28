@@ -1,7 +1,7 @@
 <html>
 
-<script type=text/javascript src="{{ url_for('static', filename='libs/jquery-3.2.0.min.js') }}"></script>
-<script type=text/javascript src="{{ url_for('static', filename='libs/socket.io.min.js') }}"></script>
+<script type=text/javascript src="{{ url_for('static', filename='lib/jquery-3.2.0.min.js') }}"></script>
+<script type=text/javascript src="{{ url_for('static', filename='lib/socket.io.min.js') }}"></script>
 
 <script type=text/javascript>
 	$(document).ready(function() {
@@ -24,20 +24,19 @@
 		socket.on('update', function(msg) {
 			// Check if property exists in message to allow
 			// updating of only some fields at a time
+			if(msg.hasOwnProperty('hands')) {
+				// Temporary until I get users set up & stop sending all hands to all players
+				$('#top_hand').html(msg.hands[1]);
+
+				$('#bottom_hand').html(msg.hands[0]);
+			}
+
 			if(msg.hasOwnProperty('top_name')) {
 				$('#top_name').html(msg.top_name);
 			}
 
-			if(msg.hasOwnProperty('top_hand')) {
-				$('#top_hand').html(msg.top_hand);
-			}
-
 			if(msg.hasOwnProperty('middle')) {
 				$('#middle').html(msg.middle);
-			}
-
-			if(msg.hasOwnProperty('bottom_hand')) {
-				$('#bottom_hand').html(msg.bottom_hand);
 			}
 
 			if(msg.hasOwnProperty('bottom_name')) {

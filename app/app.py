@@ -48,7 +48,8 @@ def deal(msg):
 		deal_hands(game)
 
 	emit('update',
-		{'middle': game['middle'],
+		{'hands': prepare_hands(game, 0),
+		 'middle': game['middle'],
 		 'bottom': game['bottom'],
 		 'log': game['log']},
 		room=game['id'])
