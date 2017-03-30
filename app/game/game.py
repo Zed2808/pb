@@ -56,6 +56,10 @@ def new_game_id():
 
 	return game_id
 
+# Generate new generic username (player + 5 random numbers)
+def new_username():
+	return f'Player{random.randint(10000, 100000)}'
+
 # Return game given its game ID
 def get_game(games, game_id):
 	game = [game for game in games if game['id'] == game_id]

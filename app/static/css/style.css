@@ -7,6 +7,14 @@ body {
 	background: linear-gradient(to bottom, #0c892f, #085f20);
 }
 
+h1 {
+	size: 200%;
+	font-family: Roboto Condensed;
+	color: white;
+	text-shadow: 0px 2px 2px black;
+	margin: 10px;
+}
+
 p {
 	font-family: Roboto Condensed;
 	color: white;
@@ -87,6 +95,44 @@ p {
 	text-align: center;
 	position: fixed;
 	bottom: 0%;
+}
+
+input[type=text] {
+	width: 20%;
+	margin: 8px 0;
+	padding: 6px 10px;
+	box-sizing: border-box;
+	border-radius: 6px;
+	border: 4px solid #2bdb5c;
+	background-color: #2bdb5c;
+	transition-duration: 0.2s;
+	font-family: Roboto Condensed;
+	font-size: 20px;
+	color: white;
+}
+
+input[type=text]:focus {
+	outline: none;
+}
+
+::-webkit-input-placeholder {
+	color: #91ffaf;
+}
+
+input[type=submit] {
+	padding: 10px 24px;
+	margin: 8px 0;
+	font-size: 200%;
+	font-family: Roboto Condensed;
+	border: none;
+	background-color: #11c042;
+	color: white;
+	border-radius: 8px;
+	transition-duration: 0.2s;
+}
+
+input[type=submit]:hover {
+	background-color: #2bdb5c;
 }
 
 #deal {

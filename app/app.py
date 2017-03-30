@@ -7,6 +7,7 @@ app.secret_key = 'SuperSecretKey'
 socketio = SocketIO(app)
 
 games = []
+players = {}
 
 @app.route('/')
 def index():
@@ -19,19 +20,31 @@ def connect():
 
 @socketio.on('disconnect')
 def disconnect():
-	print(f'>>> Player ({request.sid}) disconnected')
+	try:
+		print(f'>>> Player {players[request.sid]} ({request.sid}) disconnected')
+	except:
+		print(f'>>> Player ({request.sid}) disconnected')
 
 # When player joins a room, create a new game if it doesn't already exist
 @socketio.on('join')
-def join(msg={'game_id': ''}):
+def join(msg):
 	# Generate new game id if not given one
 	if msg['game_id'] == '':
 		game_id = new_game_id()
 	else:
 		game_id = msg['game_id']
 
+	# Generate display name if not given one
+	if msg['username'] == '':
+		username = new_username()
+	else:
+		username = msg['username']
+
+	# Add player to players by session id
+	players[request.sid] = username
+
 	join_room(game_id)
-	print(f'>>> Player ({request.sid}) joined game {game_id}')
+	print(f'>>> Player {players[request.sid]} ({request.sid}) joined game {game_id}')
 
 	# Get game if it exists already
 	game = get_game(games, game_id)
@@ -40,7 +53,7 @@ def join(msg={'game_id': ''}):
 	if game is None:
 		game = create_new_game(games, game_id)
 
-	emit('new_game', {'game_id': game['id']})
+	emit('new_game', {'game_id': game_id, 'username': username})
 
 @socketio.on('deal')
 def deal(msg):

@@ -8,24 +8,13 @@
 		// Connect to the SocketIO server
 		var socket = io.connect();
 		var game_id;
-
-		// When connection is made to the server
-		socket.on('connect', function() {
-			// Prompt user for existing game code, if none provided, create a new game
-			game_id = prompt("Enter a game code to join or create a new game with that code.\nLeave blank or press cancel to create a new game.");
-
-			// Send game_id if entered, otherwise send empty string
-			if(game_id != null) {
-				socket.emit('join', {game_id: game_id});
-			} else {
-				socket.emit('join', {game_id: ''});
-			}
-		});
+		var username;
 
 		// Confirm to player that they have joined a game
 		socket.on('new_game', function(msg) {
 			game_id = msg.game_id;
-			$('#log').html('<p>You have joined game <b>' + game_id + '</b></p>');
+			username = msg.username;
+			$('#log').html('<p>You have joined game <b>' + game_id + '</b> as <b>' + username + '</b></p>');
 		});
 
 		// Event handler for game updates
@@ -60,6 +49,12 @@
 			}
 		});
 
+		// Handle logging in and joining a game
+		$('form#join').submit(function() {
+			socket.emit('join', {username: $('#username').val(), game_id: $('#game_id').val()});
+			return false;
+		});
+
 		// Handle deal button
 		$('#bottom').on('click', '#deal', function() {
 			socket.emit('deal', {game_id: game_id});
@@ -91,19 +86,24 @@
 <body>
 	<div class="hand" id="top_hand"></div>
 
-	<div class="name" id="top_name"><p><b>Player 2</b></p></div>
+	<div class="name" id="top_name"></div>
 
-	<div id="log"></div>
+	<div id="log">
+		<h1>Create/Join Game</h1>
+		<form id="join">
+			<input type="text" name="username" id="username" placeholder="Username"><br>
+			<input type="text" name="game_id" id="game_id" placeholder="Game code (leave blank to auto-generate)"><br>
+			<input type="submit" value="Join">
+		</form>
+	</div>
 
 	<div class="hand" id="middle"></div>
 
-	<div class="name" id="bottom_name"><p><b>Player 1</b></p></div>
+	<div class="name" id="bottom_name"></div>
 
 	<div class="hand" id="bottom_hand"></div>
 
-	<div id="bottom">
-		<button id="deal" type="button">Deal</button>
-	</div>
+	<div id="bottom"></div>
 
 </body>
 </html>
