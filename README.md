@@ -7,7 +7,7 @@ A pitch playing robot.
 **Linux** packages:
 ```
 python3
-python3.4-venv
+python3-venv
 ```
 
 **Windows:**
@@ -29,15 +29,15 @@ cd pb
 
 **Windows:** ```python -m venv flask```
 
-*Install flask to the virtual environment:*
+*Install required packages to the virtual environment:*
 
-**Linux:** ```flask/bin/pip install flask```
+**Linux:** ```flask/bin/pip install -r requirements.txt```
 
-**Windows:** ```flask\Scripts\pip install flask```
+**Windows:** ```flask\Scripts\pip install -r requirements.txt```
 
 ## Running
-**Linux:** ```./run.py```
+**Linux:** ```flask/bin/python app/app.py```
 
-**Windows:** ```run.bat```
+**Windows:** ```flask\Scripts\python app/app.py```
 
 Visit [http://localhost:5000](http://localhost:5000) in your browser.
