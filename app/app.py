@@ -16,14 +16,14 @@ def index():
 # On client connection, generate a game ID for them and send it back
 @socketio.on('connect')
 def connect():
-	print(f'>>> Player ({request.sid}) connected')
+	print('>>> Player ({}) connected'.format(request.sid))
 
 @socketio.on('disconnect')
 def disconnect():
 	try:
-		print(f'>>> Player {players[request.sid]} ({request.sid}) disconnected')
+		print('>>> Player {} ({}) disconnected'.format(players[request.sid], request.sid))
 	except:
-		print(f'>>> Player ({request.sid}) disconnected')
+		print('>>> Player ({}) disconnected'.format(request.sid))
 
 # When player joins a room, create a new game if it doesn't already exist
 @socketio.on('join')
@@ -44,7 +44,7 @@ def join(msg):
 	players[request.sid] = username
 
 	join_room(game_id)
-	print(f'>>> Player {players[request.sid]} ({request.sid}) joined game {game_id}')
+	print('>>> Player {} ({}) joined game {}'.format(players[request.sid], request.sid, game_id))
 
 	# Get game if it exists already
 	game = get_game(games, game_id)
