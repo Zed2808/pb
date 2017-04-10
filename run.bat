@@ -1,1 +1,1 @@
-flask\Scripts\python.exe app\app.py
+flask\Scripts\python.exe app.py

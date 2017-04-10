@@ -36,8 +36,8 @@ cd pb
 **Windows:** ```flask\Scripts\pip install -r requirements.txt```
 
 ## Running
-**Linux:** ```flask/bin/python app/app.py```
+**Linux:** ```flask/bin/python app.py```
 
-**Windows:** ```flask\Scripts\python app/app.py```
+**Windows:** ```flask\Scripts\python app.py```
 
 Visit [http://localhost:5000](http://localhost:5000) in your browser.
