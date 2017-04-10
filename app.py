@@ -40,11 +40,12 @@ def join(msg):
 	else:
 		username = msg['username']
 
-	# Add player to players by session id
-	players[request.sid] = username
+	# Add player's session id to list of players
+	players[username] = request.sid
 
+	# Add player to game lobby
 	join_room(game_id)
-	print('>>> Player {} ({}) joined game {}'.format(players[request.sid], request.sid, game_id))
+	print('>>> Player {} ({}) joined game {}'.format(username, request.sid, game_id))
 
 	# Get game if it exists already
 	game = get_game(games, game_id)
@@ -53,7 +54,14 @@ def join(msg):
 	if game is None:
 		game = create_new_game(games, game_id)
 
-	emit('new_game', {'game_id': game_id, 'username': username})
+	# Add player to this game's players by username
+	game['players'].append(username);
+
+	# Emit join_game even to user that joined
+	emit('join_game', {'game_id': game_id, 'players': game['players'], 'username': username})
+
+	# Emit other_joins to everyone else in the room to update player list
+	emit('other_joins', {'players': game['players']}, room=game['id'], include_self=False)
 
 @socketio.on('deal')
 def deal(msg):

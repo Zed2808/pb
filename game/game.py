@@ -9,6 +9,7 @@ from .pb import *
 def create_new_game(games, game_id):
 	game = {
 		'id': game_id,
+		'players': [],
 		'num_players': 2,
 		'hand_size': 6,
 		'dealer': 0,

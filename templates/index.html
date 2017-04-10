@@ -8,14 +8,44 @@
 		// Connect to the SocketIO server
 		var socket = io.connect();
 		var game_id;
+		var log;
 		var username;
+		var players;
+
+		// Return list of players ready to display
+		function make_player_list() {
+			var html_list = '<h1>Players</h1>';
+			for(var i = 0; i < players.length; i++) {
+				html_list += '<p>' + players[i] + '</p>';
+			}
+			return html_list;
+		}
 
 		// Confirm to player that they have joined a game
-		socket.on('new_game', function(msg) {
+		socket.on('join_game', function(msg) {
 			game_id = msg.game_id;
+			players = msg.players;
 			username = msg.username;
-			$('#log').html('<p>You have joined game <b>' + game_id + '</b> as <b>' + username + '</b></p>');
+
+			// Display player list
+			$('#log').html(make_player_list());
+
+			// Show game we joined and username used
+			$('#log').append('<br><p>You have joined game <b>' + game_id + '</b> as <b>' + username + '</b></p>');
+
+			// Clear join form
 			$('#middle').html('');
+		});
+
+		// When another player joins the lobby
+		socket.on('other_joins', function(msg) {
+			players = msg.players;
+
+			// Update player list shown
+			$('#log').html(make_player_list());
+
+			// Keep personal join message
+			$('#log').append('<br><p>You have joined game <b>' + game_id + '</b> as <b>' + username + '</b></p>');
 		});
 
 		// Event handler for game updates
