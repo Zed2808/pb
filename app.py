@@ -1,3 +1,4 @@
+from eventlet import sleep
 from flask import Flask, render_template, jsonify
 from flask_socketio import SocketIO, emit, join_room
 from game.game import *
@@ -57,11 +58,11 @@ def join(msg):
 	# Add player to this game's players by username
 	game['players'].append(username);
 
-	# Emit join_game even to user that joined
-	emit('join_game', {'game_id': game_id, 'players': game['players'], 'username': username})
+	# Emit player_joins to user that joined
+	emit('player_joins', {'players': game['players'], 'game_id': game_id, 'username': username})
 
-	# Emit other_joins to everyone else in the room to update player list
-	emit('other_joins', {'players': game['players']}, room=game['id'], include_self=False)
+	# Emit player_joins to everyone else in the room to update player list
+	emit('player_joins', {'players': game['players']}, room=game['id'], include_self=False)
 
 @socketio.on('deal')
 def deal(msg):

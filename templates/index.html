@@ -21,11 +21,19 @@
 			return html_list;
 		}
 
-		// Confirm to player that they have joined a game
-		socket.on('join_game', function(msg) {
-			game_id = msg.game_id;
-			players = msg.players;
-			username = msg.username;
+		// Whether we're joining or another player joins
+		socket.on('player_joins', function(msg) {
+			if(msg.hasOwnProperty('players')) {
+				players = msg.players;
+			}
+
+			if(msg.hasOwnProperty('game_id')) {
+				game_id = msg.game_id;
+			}
+
+			if(msg.hasOwnProperty('username')) {
+				username = msg.username;
+			}
 
 			// Display player list
 			$('#log').html(make_player_list());
@@ -35,17 +43,6 @@
 
 			// Clear join form
 			$('#middle').html('');
-		});
-
-		// When another player joins the lobby
-		socket.on('other_joins', function(msg) {
-			players = msg.players;
-
-			// Update player list shown
-			$('#log').html(make_player_list());
-
-			// Keep personal join message
-			$('#log').append('<br><p>You have joined game <b>' + game_id + '</b> as <b>' + username + '</b></p>');
 		});
 
 		// Event handler for game updates
