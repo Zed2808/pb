@@ -55,8 +55,8 @@ def join(msg):
 	if game is None:
 		game = create_new_game(games, game_id)
 
-	# Add player to this game's players by username
-	game['players'].append(username);
+	# Add player to game
+	add_player(game, username)
 
 	# Emit player_joins to user that joined
 	emit('player_joins', {'players': game['players'], 'game_id': game_id, 'username': username})
@@ -64,20 +64,30 @@ def join(msg):
 	# Emit player_joins to everyone else in the room to update player list
 	emit('player_joins', {'players': game['players']}, room=game['id'], include_self=False)
 
+	# If the game has reached the target number of players
+	if len(game['players']) >= game['num_players']:
+		print('>>> {} players in game {}, starting game...'.format(game['num_players'], game_id))
+		emit('log', {'log': '<p>Starting new game in 3 seconds...</p>'}, room=game['id'])
+		sleep(3)
+		deal({'game_id': game_id})
+
 @socketio.on('deal')
 def deal(msg):
+	# Get game with id game_id
 	game = get_game(games, msg['game_id'])
 
 	# Only deal hands if hands have not been dealt yet this round
 	if not game['hands_dealt']:
 		deal_hands(game)
 
-	emit('update',
-		{'hands': prepare_hands(game, 0),
-		 'middle': game['middle'],
-		 'bottom': game['bottom'],
-		 'log': game['log']},
-		room=game['id'])
+	# Emit game update showing each player their hands
+	for player in game['players']:
+		emit('update',
+			{'hands': prepare_hands(game, player),
+			 'middle': game['middle'],
+			 'bottom': game['bottom'],
+			 'log': game['log']},
+			room=players[player])
 
 @socketio.on('bid')
 def bid(msg):

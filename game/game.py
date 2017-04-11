@@ -28,18 +28,12 @@ def create_new_game(games, game_id):
 		'lead_suit': 0,
 		'deck': new_deck(filled=True, shuffled=True),
 		'middle_cards': new_deck(),
-		'hands': [],
+		'hands': {},
 		'hands_dealt': False,
-		'tricks': [],
-		'scores': [],
+		'tricks': {},
+		'scores': {},
 		'score_limit': 11
 	}
-
-	# Create hand, trick pile, and score for each player
-	for player in range(game['num_players']):
-		game['hands'].append(new_deck())
-		game['tricks'].append(new_deck())
-		game['scores'].append(0)
 
 	# Set empty returns
 	reset_returns(game)
@@ -48,6 +42,16 @@ def create_new_game(games, game_id):
 	games.append(game)
 
 	return game
+
+# Add new player to game
+def add_player(game, username):
+	# Add player to this game's players by username
+	game['players'].append(username);
+
+	# Create hand, trick pile, and score for new player
+	game['hands'][username] = new_deck()
+	game['tricks'][username] = new_deck()
+	game['scores'][username] = 0
 
 # Generate new 4 letter game ID
 def new_game_id():
@@ -97,7 +101,7 @@ def deal_hands(game):
 
 	# Deal hand to each player
 	print('>>> Dealing hands')
-	for player in range(game['num_players']):
+	for player in game['players']:
 		# Deal cards up to hand_size
 		for n in range(game['hand_size']):
 			# Get card from the deck
@@ -106,7 +110,7 @@ def deal_hands(game):
 			# Add card to player's hand
 			push_back(game['hands'][player], card)
 
-	game['log'] += '<p><b>Player {}</b> bids first.</p>'.format(game['active_player']+1)
+	game['log'] += '<p><b>{}</b> bids first.</p>'.format(game['players'][game['active_player']])
 	game['hands_dealt'] = True
 
 # Perform a turn of the bidding round
@@ -426,9 +430,10 @@ def score_hands(game):
 def prepare_hands(game, client):
 	# Hands ready for display
 	hands = {}
+	hands['top_hand'] = ''
 
-	# Prepare hands for display
-	for player in range(game['num_players']):
+	# Prepare each player's hand for display
+	for player in game['players']:
 		# Create empty placeholder for player's hand
 		hands[player] = ''
 
@@ -438,7 +443,7 @@ def prepare_hands(game, client):
 		# Get number of playable cards in hand
 		playable = playable_cards(game['hands'][player], game)
 
-		# Add card html to display
+		# Add card html to display for each card in player's hand
 		for n in range(len(game['hands'][player]['cards'])):
 			card = game['hands'][player]['cards'][n]
 
@@ -457,7 +462,7 @@ def prepare_hands(game, client):
 			# Bot's hand
 			else:
 				# Add card back to be displayed
-				hands[player] += card_back
+				hands['top_hand'] += card_back
 				# hands[player] += card_html.format('unclickable', card['suit'], card['value'])
 
 	return hands
