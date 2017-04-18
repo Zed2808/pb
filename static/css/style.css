@@ -3,7 +3,9 @@
 }
 
 body {
+	height: 100%;
 	margin: 0px;
+	background: #0c892f;
 	background: linear-gradient(to bottom, #0c892f, #085f20);
 }
 
