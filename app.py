@@ -41,8 +41,9 @@ def join(msg):
 	else:
 		username = msg['username']
 
-	# Add player's session id to list of players
+	# Store player's username and session id together
 	players[username] = request.sid
+	players[request.sid] = username
 
 	# Add player to game lobby
 	join_room(game_id)
@@ -84,6 +85,8 @@ def deal(msg):
 	for player in game['players']:
 		emit('update',
 			{'hands': prepare_hands(game, player),
+			 'top_name': next_player(game, player),
+			 'bottom_name': player,
 			 'middle': game['middle'],
 			 'bottom': game['bottom'],
 			 'log': game['log']},

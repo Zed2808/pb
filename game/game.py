@@ -73,16 +73,24 @@ def get_game(games, game_id):
 	return game[0]
 
 # Advance active_player, looping if necessary
-def next_player(game):
+def advance_player(game):
 	game['active_player'] += 1
 	if game['active_player'] >= game['num_players']:
 		game['active_player'] = 0
 
 # Advance to next dealer, looping if necessary
-def next_dealer(game):
+def advance_dealer(game):
 	game['dealer'] += 1
 	if game['dealer'] >= game['num_players']:
 		game['dealer'] = 0
+
+# Find index of next player, looping if necessary
+def next_player(game, player):
+	index = game['players'].index(player)
+	index += 1
+	if index >= game['num_players']:
+		index = 0
+	return game['players'][index]
 
 # Reset HTML return strings
 def reset_returns(game):
@@ -140,24 +148,24 @@ def bidding_round(game):
 			game['bid'] = bid
 			game['min_bid'] = bid + 1
 			game['bidder'] = game['active_player']
-			print('>>> player {} bid {}'.format(game['active_player'], bid))
-			game['log'] = '<p><b>Player {}</b> bid {}.</p>'.format(game['bidder']+1, bid)
+			print('>>> {} bid {}'.format(game['player'][game['active_player']], bid))
+			game['log'] = '<p><b>Player {}</b> bid {}.</p>'.format(game['players'][game['bidder']], bid)
 		# Pass
 		else:
-			print('>>> player {} passes'.format(game['active_player']))
-			game['log'] = '<p><b>Player {}</b> passes.</p>'.format(game['active_player']+1)
+			print('>>> {} passes'.format(game['players'][game['active_player']]))
+			game['log'] = '<p><b>{}</b> passes.</p>'.format(game['players'][game['active_player']])
 
 		# Prepare for next player
-		next_player(game)
+		advance_player(game)
 
 		# Check if dealer's hand is forced
 		if game['active_player'] == game['dealer'] and game['bid'] < 2:
 			game['bid'] = game['min_bid']
 			game['bidder'] = game['active_player']
 
-			print('>>> player {} is forced to bid {}'.format(game['active_player'], game['bid']))
+			print('>>> {} is forced to bid {}'.format(game['players'][game['active_player']], game['bid']))
 
-			game['log'] += '<p><b>Player {}</b> is forced to bid {}.</p>'.format(game['bidder']+1, game['bid'])
+			game['log'] += '<p><b>{}</b> is forced to bid {}.</p>'.format(game['player'][game['bidder']], game['bid'])
 			game['middle'] = ''
 			game['bottom'] = adv_button
 
@@ -178,12 +186,12 @@ def bidding_round(game):
 		# Dealer passes
 		if bid == 0:
 			game['bottom'] = adv_button
-			game['log'] = '<p><b>Player {}</b> passes.</p>'.format(game['active_player']+1)
+			game['log'] = '<p><b>{}</b> passes.</p>'.format(game['players'][game['active_player']])
 		# Dealer matches
 		else:
-			game['log'] = '<p><b>Player {}</b> matches <b>Player {}</b>\'s bid of {}.</p>'.format(game['active_player']+1,
-				                                                                   game['bidder']+1,
-				                                                                   game['bid'])
+			game['log'] = '<p><b>{}</b> matches <b>{}</b>\'s bid of {}.</p>'.format(game['players'][game['active_player']],
+				                                                                    game['players'][game['bidder']],
+				                                                                    game['bid'])
 			game['bidder'] = game['active_player']
 			game['bottom'] = adv_button
 
@@ -252,7 +260,7 @@ def play_card(game):
 		push_back(game['middle_cards'], game['played_card'])
 
 		# Prepare for next player
-		next_player(game)
+		advance_player(game)
 
 # Check if the played card is the new top card and set variables accordingly
 def check_if_new_top(game):
@@ -323,9 +331,9 @@ def end_round(game):
 		game['hands_dealt'] = False
 		game['trump_set'] = False
 		game['round'] = -1
-		next_dealer(game)
+		advance_dealer(game)
 		game['active_player'] = game['dealer']
-		next_player(game)
+		advance_player(game)
 		game['min_bid'] = 2
 		game['bid'] = 0
 		game['bidder'] = -1
