@@ -96,7 +96,7 @@
 
 		// Handle bidding buttons
 		$('#middle').on('click', '.bid_button', function() {
-			socket.emit('bid', {game_id: game_id, data: $(this).val()});
+			socket.emit('bid', {game_id: game_id, bid_amount: $(this).val()});
 			return false;
 		});
 

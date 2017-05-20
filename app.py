@@ -87,14 +87,15 @@ def deal(msg):
 			{'hands': prepare_hands(game, player),
 			 'top_name': next_player(game, player),
 			 'bottom_name': player,
-			 'middle': game['middle'],
+			 'middle': prepare_middle(game, player),
 			 'bottom': game['bottom'],
 			 'log': game['log']},
-			room=players[player])
+			 room=players[player])
 
 @socketio.on('bid')
 def bid(msg):
 	game = get_game(games, msg['game_id'])
+	print('>>> {} bid {} in game {}'.format(game['players'][game['active_player']], msg['bid_amount'], game['id']))
 
 @socketio.on('action')
 def do_action(msg):
@@ -121,19 +122,15 @@ def do_action(msg):
 
 		print('>>> END OF TURN')
 
-	prepare_hands(game)
-
-	prepare_middle(game)
-
-	prepare_names(game)
-
-	emit('update', jsonify(top_name=game['top_name'],
-				           top_hand=game['top_hand'],
-				           middle=game['middle'],
-				           bottom_hand=game['bottom_hand'],
-				           bottom_name=game['bottom_name'],
-				           bottom=game['bottom'],
-				           log=game['log']))
+	for player in game['players']:
+		emit('update',
+			{'hands': prepare_hands(game, player),
+			 'top_name': next_player(game, player),
+			 'bottom_name': player,
+			 'middle': prepare_middle(game, player),
+			 'bottom': game['bottom'],
+			 'log': game['log']},
+			 room=players[player])
 
 if __name__ == '__main__':
 	socketio.run(app, debug=True)

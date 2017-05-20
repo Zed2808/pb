@@ -108,7 +108,7 @@ def deal_hands(game):
 	game['deck'] = new_deck(filled=True, shuffled=True)
 
 	# Deal hand to each player
-	print('>>> Dealing hands')
+	print('>>> Dealing hands to game {}'.format(game['id']))
 	for player in game['players']:
 		# Deal cards up to hand_size
 		for n in range(game['hand_size']):
@@ -476,21 +476,18 @@ def prepare_hands(game, client):
 	return hands
 
 # Prepare middle cards for display
-def prepare_middle(game):
-	for card in game['middle_cards']['cards']:
-		if card['suit'] == game['trump']:
-			card_class = 'trump'
-		else:
-			card_class = ''
-		game['middle'] += card_html.format(card_class, card['suit'], card['value'])
+def prepare_middle(game, client):
+	# If in bidding round
+	if game['round'] == -1:
+		# If this user is the current bidder
+		if client == game['players'][game['active_player']]:
+			return bid_buttons
 
-# Set the name fields to return to display
-def prepare_names(game):
-	# Human is the dealer
-	if game['dealer'] == 0:
-		game['top_name'] = '<p><b>Player 2</b>: {} points</p>'.format(game['scores'][1])
-		game['bottom_name'] = '<p><b>Player 1</b> (dealer): {} points</p>'.format(game['scores'][0])
-	# Bot is the dealer
 	else:
-		game['top_name'] = '<p><b>Player 2</b> (dealer): {} points</p>'.format(game['scores'][1])
-		game['bottom_name'] = '<p><b>Player 1</b>: {} points</p>'.format(game['scores'][0])
+		# If there are cards in play, show them
+		for card in game['middle_cards']['cards']:
+			if card['suit'] == game['trump']:
+				card_class = 'trump'
+			else:
+				card_class = ''
+			game['middle'] += card_html.format(card_class, card['suit'], card['value'])
