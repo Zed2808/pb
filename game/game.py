@@ -173,14 +173,21 @@ def bidding_round(game, bid):
 
 		#Prepare for first round
 		game['round'] = 0
-		game['turn'] = -1
+
+	# If bidding round is over
+	if game['round'] == 0:
+		print('>>> {} won with a bid of {} (game {})'.format(game['players'][game['bidder']], game['bid'], game['id']))
+		game['log'] += '<p><b>{}</b> won with a bid of {}.</p>'.format(game['players'][game['bidder']], game['bid'])
+
+		game['active_player'] = game['bidder']
+		game['turn'] = 0
 
 # Play a card
 def play_card(game):
-	print('>>> HAND IN PROGRESS')
-	print('>>> ROUND {} IN PROGRESS'.format(game['round']))
-	print('>>> START OF TURN {}'.format(game['turn']))
-	print('>>> active_player: {}'.format(game['active_player']))
+	print('>>> Starting hand (game {})'.format(game['id']))
+	print('>>> Round {} in progress (game {})'.format(game['round'], game['id']))
+	print('>>> Starting turn {} (game{})'.format(game['turn'], game['id']))
+	print('>>> active_player: {} (game {})'.format(game['active_player'], game['id']))
 
 	# If start of the hand
 	if game['round'] == 0 and game['turn'] == -1:
@@ -414,40 +421,39 @@ def score_hands(game):
 def prepare_hands(game, client):
 	# Hands ready for display
 	hands = {}
-	hands['top_hand'] = ''
 
-	# Prepare each player's hand for display
+	# Prepare each player's hand
 	for player in game['players']:
-		# Create empty placeholder for player's hand
-		hands[player] = ''
+		# If preparing client's hand
+		if player == client:
+			# Create entry for player
+			hands[player] = ''
 
-		# Sort hands
-		sort_deck(game['hands'][player], game)
+			# Sort player's hand
+			sort_deck(game['hands'][player], game)
 
-		# Get number of playable cards in hand
-		playable = playable_cards(game['hands'][player], game)
+			# Get number of playable cards
+			playable = playable_cards(game, player)
 
-		# Add card html to display for each card in player's hand
-		for n in range(len(game['hands'][player]['cards'])):
-			card = game['hands'][player]['cards'][n]
+			# Add card HTML to display for each card in player's hand
+			for n in range(len(game['hands'][player]['cards'])):
+				# Get card n
+				card = game['hands'][player]['cards'][n]
 
-			# If client's hand
-			if player == client:
-				# If client about to go, card is playable, round is not over, and round is not bidding round, make cards clickable
-				if game['active_player'] == client and n in range(playable) and game['round_over'] == False and game['round'] > -1:
-					# If card is trump and there is a trump
+				# If card is playable, make it clickable
+				if n in range(playable):
+					# If card is trump and trump has been set
 					if card['suit'] == game['trump'] and game['trump_set']:
 						card_class = 'trump'
 					else:
 						card_class = ''
+
 					hands[player] += card_clickable_html.format(card_class, n, card['suit'], card['value'])
 				else:
 					hands[player] += card_html.format('unclickable', card['suit'], card['value'])
-			# Bot's hand
-			else:
-				# Add card back to be displayed
-				hands['top_hand'] += card_back
-				# hands[player] += card_html.format('unclickable', card['suit'], card['value'])
+		else:
+			# Add unclickable card backs to hand
+			hands['top_hand'] = card_back * len(game['hands'][player]['cards'])
 
 	return hands
 

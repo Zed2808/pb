@@ -111,28 +111,21 @@ def bid(msg):
 
 @socketio.on('action')
 def do_action(msg):
-	# Bidding round
-	if game['round'] == -1:
-		# Active player places their bid
-		bidding_round(game)
+	# Active player plays a card
+	play_card(game)
 
-	# Regular rounds
-	else:
-		# Active player plays a card
-		play_card(game)
+	# Round is over: collect the tricks and prepare a new round
+	if game['round_over']:
+		end_round(game)
 
-		# Round is over: collect the tricks and prepare a new round
-		if game['round_over']:
-			end_round(game)
+	# Prepare for next turn
+	game['turn'] += 1
 
-		# Prepare for next turn
-		game['turn'] += 1
+	# Last turn completed
+	if game['turn'] >= game['num_players']:
+		end_turn(game)
 
-		# Last turn completed
-		if game['turn'] >= game['num_players']:
-			end_turn(game)
-
-		print('>>> END OF TURN')
+	print('>>> END OF TURN')
 
 	for player in game['players']:
 		emit('update',

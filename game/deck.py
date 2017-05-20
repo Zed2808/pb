@@ -92,27 +92,32 @@ def sort_deck(deck, game):
 			deck['cards'] += suit_lists[suit]
 
 # Return number of playable cards in the hand
-def playable_cards(deck, game):
+def playable_cards(game, player):
 	# No one's turn yet, no cards playable
 	if game['turn'] == -1:
 		return 0
-	# If first turn, all cards are playable
-	elif game['turn'] == 0:
-		return game['hand_size']
 
-	num_trump = 0
-	num_lead = 0
+	# If player is the active player
+	if player == game['players'][game['active_player']]:
+		# If first turn, any card is playable
+		if game['turn'] == 0:
+			return game['hand_size']
 
-	# Count number of trump and lead suit cards
-	for card in deck['cards']:
-		if card['suit'] == game['lead_suit']:
-			num_lead += 1
-		elif card['suit'] == game['trump']:
-			num_trump += 1
+		num_trump = 0
+		num_lead = 0
 
-	# If no lead suit cards
-	if num_lead == 0:
-		# Can play anything (trump or other)
-		return len(deck['cards'])
+		# Count number of trump and lead suit cards
+		for card in game['hands'][player]['cards']:
+			if card['suit'] == game['lead_suit']:
+				num_lead += 1
+			elif card['suit'] == game['trump']:
+				num_trump += 1
+
+		# If no lead suit cards
+		if num_lead == 0:
+			# Can play anything (trump or other)
+			return len(game['hands'][player]['cards'])
+		else:
+			return num_trump + num_lead
 	else:
-		return num_trump + num_lead
+		return 0
