@@ -122,37 +122,23 @@ def deal_hands(game):
 	game['hands_dealt'] = True
 
 # Perform a turn of the bidding round
-def bidding_round(game):
+def bidding_round(game, bid):
 	# As long as we haven't reached the dealer yet
 	if game['active_player'] != game['dealer']:
-		print('>>> dealer not bidding')
 		# Player's bid
-		if game['active_player'] == 0:
-			bid = request.args.get('bid', 0, type=int)
-			game['bottom'] = adv_button
-		# Bot's bid
-		else:
-			bid = PB.action(game)
-			# If bot doesn't pass
-			if bid != 0:
-				# Bid is valid
-				if bid in range(2, 5):
-					game['middle'] = match_pass_buttons.format(bid)
-				# Default an invalid bid to 0
-				else:
-					bid = 0
+		current_bid = bid
 
 		# Not pass
-		if bid != 0:
+		if current_bid != 0:
 			# Set bid, bidder, new min_bid
-			game['bid'] = bid
-			game['min_bid'] = bid + 1
+			game['bid'] = current_bid
+			game['min_bid'] = current_bid + 1
 			game['bidder'] = game['active_player']
-			print('>>> {} bid {}'.format(game['player'][game['active_player']], bid))
-			game['log'] = '<p><b>Player {}</b> bid {}.</p>'.format(game['players'][game['bidder']], bid)
+			print('>>> {} bid {} (game {})'.format(game['players'][game['active_player']], current_bid, game['id']))
+			game['log'] = '<p><b>Player {}</b> bid {}.</p>'.format(game['players'][game['bidder']], current_bid)
 		# Pass
 		else:
-			print('>>> {} passes'.format(game['players'][game['active_player']]))
+			print('>>> {} passes (game {})'.format(game['players'][game['active_player']], game['id']))
 			game['log'] = '<p><b>{}</b> passes.</p>'.format(game['players'][game['active_player']])
 
 		# Prepare for next player
@@ -163,29 +149,20 @@ def bidding_round(game):
 			game['bid'] = game['min_bid']
 			game['bidder'] = game['active_player']
 
-			print('>>> {} is forced to bid {}'.format(game['players'][game['active_player']], game['bid']))
+			print('>>> {} is forced to bid {} (game {})'.format(game['players'][game['active_player']], game['bid'], game['id']))
 
-			game['log'] += '<p><b>{}</b> is forced to bid {}.</p>'.format(game['player'][game['bidder']], game['bid'])
-			game['middle'] = ''
-			game['bottom'] = adv_button
+			game['log'] += '<p><b>{}</b> is forced to bid {}.</p>'.format(game['players'][game['bidder']], game['bid'])
 
 			#Prepare for first round
 			game['round'] = 0
 
 	# If others have bid, dealer can still match or pass
 	else:
-		# Human
-		if game['active_player'] == 0:
-			bid = request.args.get('bid', 0, type=int)
-		# Bot
-		else:
-			bid = PB.action(game)
-			if bid not in range(2, 5) and bid != 0:
-				bid = 0
+		# Player's bid
+		current_bid = bid
 
 		# Dealer passes
 		if bid == 0:
-			game['bottom'] = adv_button
 			game['log'] = '<p><b>{}</b> passes.</p>'.format(game['players'][game['active_player']])
 		# Dealer matches
 		else:
@@ -193,7 +170,6 @@ def bidding_round(game):
 				                                                                    game['players'][game['bidder']],
 				                                                                    game['bid'])
 			game['bidder'] = game['active_player']
-			game['bottom'] = adv_button
 
 		#Prepare for first round
 		game['round'] = 0
@@ -481,7 +457,11 @@ def prepare_middle(game, client):
 	if game['round'] == -1:
 		# If this user is the current bidder
 		if client == game['players'][game['active_player']]:
-			return bid_buttons
+			# If the user is also the dealer
+			if client == game['players'][game['dealer']]:
+				return match_pass_buttons.format(game['bid'])
+			else:
+				return bid_buttons
 
 	else:
 		# If there are cards in play, show them

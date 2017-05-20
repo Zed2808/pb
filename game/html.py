@@ -8,7 +8,7 @@ bid_buttons = '''
 	<button class="bid_button" type="button" value="3">3</button>
 	<button class="bid_button" type="button" value="4">4</button>'''
 match_pass_buttons = '''
-	<button class="bid_button" type="button" value="0">Pass</button><
+	<button class="bid_button" type="button" value="0">Pass</button>
 	<button class="bid_button" type="button" value="{0}">Match ({0})</button>'''
 
 # HTML for displaying a card image

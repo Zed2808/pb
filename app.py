@@ -95,7 +95,19 @@ def deal(msg):
 @socketio.on('bid')
 def bid(msg):
 	game = get_game(games, msg['game_id'])
-	print('>>> {} bid {} in game {}'.format(game['players'][game['active_player']], msg['bid_amount'], game['id']))
+	bid = int(msg['bid_amount'])
+
+	bidding_round(game, bid)
+
+	for player in game['players']:
+		emit('update',
+			{'hands': prepare_hands(game, player),
+			 'top_name': next_player(game, player),
+			 'bottom_name': player,
+			 'middle': prepare_middle(game, player),
+			 'bottom': game['bottom'],
+			 'log': game['log']},
+			 room=players[player])
 
 @socketio.on('action')
 def do_action(msg):
