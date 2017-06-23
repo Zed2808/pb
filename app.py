@@ -109,6 +109,43 @@ def bid(msg):
 			 'log': game['log']},
 			 room=players[player])
 
+@socketio.on('card_picked')
+def card_picked(msg):
+	# Get game from game_id
+	game = get_game(games, msg['game_id'])
+
+	# Get card picked by player
+	card_number = int(msg['card'])
+
+	# Play chosen card
+	play_card(game, card_number)
+
+	# Emit game update
+	for player in game['players']:
+		emit('update',
+			{'hands': prepare_hands(game, player),
+			 'top_name': next_player(game, player),
+			 'bottom_name': player,
+			 'middle': prepare_middle(game, player),
+			 'bottom': game['bottom'],
+			 'log': game['log']},
+			 room=players[player])
+
+	# If end of round
+	if game['turn'] >= game['num_players']:
+		end_round(game)
+
+	# Emit game update
+	for player in game['players']:
+		emit('update',
+			{'hands': prepare_hands(game, player),
+			 'top_name': next_player(game, player),
+			 'bottom_name': player,
+			 'middle': prepare_middle(game, player),
+			 'bottom': game['bottom'],
+			 'log': game['log']},
+			 room=players[player])
+
 @socketio.on('action')
 def do_action(msg):
 	# Active player plays a card

@@ -102,7 +102,7 @@
 
 		// Handle playing a card
 		$('#bottom_hand').on('click', '.clickable', function() {
-			socket.emit('play_card', {game_id: game_id, data: $(this).val()});
+			socket.emit('card_picked', {game_id: game_id, card: $(this).val()});
 			return false;
 		});
 	});

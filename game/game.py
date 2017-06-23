@@ -183,134 +183,89 @@ def bidding_round(game, bid):
 		game['turn'] = 0
 
 # Play a card
-def play_card(game):
-	print('>>> Starting hand (game {})'.format(game['id']))
-	print('>>> Round {} in progress (game {})'.format(game['round'], game['id']))
-	print('>>> Starting turn {} (game{})'.format(game['turn'], game['id']))
-	print('>>> active_player: {} (game {})'.format(game['active_player'], game['id']))
+def play_card(game, card_number):
+	# Set played card from player's choice
+	played_card = remove_card(game['hands'][game['players'][game['active_player']]], card_number)
+	print('>>> {} played the {}.'.format(game['players'][game['active_player']], card_to_string(played_card)))
 
-	# If start of the hand
-	if game['round'] == 0 and game['turn'] == -1:
-		# Log who is leading out
-		game['log'] = '<p><b>Player {}</b> won the bid and is leading out.</p>'.format(game['bidder']+1)
-		game['active_player'] = game['bidder']
+	# Log player's choice
+	game['log'] = '<p><b>{}</b> played the {}.</p>'.format(game['players'][game['active_player']], card_to_string(played_card))
 
-		# Show adv_button if bot is leading
-		if game['active_player'] != 0:
-			game['bottom'] = adv_button
+	# If leading the round
+	if game['turn'] == 0:
+		print('>>> {} leads the hand'.format(game['players'][game['active_player']]))
 
-	# Actual game turns
-	elif game['turn'] > -1 and game['turn'] < game['num_players']:
-		# Playing a card
-		# Human's turn
-		if game['active_player'] == 0:
-			choice = request.args.get('card', 0, type=int)
+		# Set lead suit, initial taker, top card
+		game['lead_suit'] = played_card['suit']
+		game['taker'] = game['active_player']
+		game['top_card'] = played_card
 
-			# Enable adv_button
-			game['bottom'] = adv_button
-		# Bot's turn
-		else:
-			choice = PB.action(game)
-			if choice not in range(playable_cards(game['hands'][1], game)):
-				choice = 0
-
-		# Set played card from player's choice
-		game['played_card'] = remove_card(game['hands'][game['active_player']], choice)
-		print('>>> Player {} played the {}.'.format(game['active_player'], card_to_string(game['played_card'])))
-
-		game['log'] += '<p><b>Player {}</b> played the {}.</p>'.format(game['active_player']+1, card_to_string(game['played_card']))
-
-		# If leading the round
-		if game['turn'] == 0:
-			print('>>> Player {} leads the hand'.format(game['active_player']))
-
-			# Set lead suit, initial taker, top card, round_over
-			game['lead_suit'] = game['played_card']['suit']
+		# Set trump if first round
+		if game['round'] == 0:
+			print('>>> {} sets trump as {}'.format(game['players'][game['active_player']], suit_to_string(played_card['suit'])))
+			game['trump'] = played_card['suit']
+			game['trump_set'] = True
+			game['log'] += '<p>Trump is now <b>{}</b>.</p>'.format(suit_to_string(played_card['suit']))
+	# Otherwise, check if card beats top
+	else:
+		if new_top(game, played_card):
+			game['top_card'] = played_card
 			game['taker'] = game['active_player']
-			game['top_card'] = game['played_card']
 
-			# Set trump if first round
-			if game['round'] == 0:
-				print('>>> Player {} sets trump as {}'.format(game['active_player'], suit_to_string(game['played_card']['suit'])))
-				game['trump'] = game['played_card']['suit']
-				game['trump_set'] = True
-				game['log'] += '<p>Trump is now <b>{}</b>.</p>'.format(suit_to_string(game['played_card']['suit']))
-		# Otherwise, check if card beats top
-		else:
-			check_if_new_top(game)
+	# Move played card to middle, prepare to display
+	push_back(game['middle_cards'], played_card)
 
-		# Move played card to middle, prepare to display
-		push_back(game['middle_cards'], game['played_card'])
+	# End player's turn
+	advance_player(game)
+	game['turn'] += 1
 
-		# Prepare for next player
-		advance_player(game)
-
-# Check if the played card is the new top card and set variables accordingly
-def check_if_new_top(game):
+# Check if given card beats the game's current top card
+def new_top(game, card):
 	# Current top is trump
 	if game['top_card']['suit'] == game['trump']:
 		# Played card is also trump
-		if game['played_card']['suit'] == game['trump']:
-			# Played value beats top value
-			if game['played_card']['value'] > game['top_card']['value']:
-				print('>>> Player {} sets new top card'.format(game['active_player']))
-				# Set new top & taker
-				game['top_card'] = game['played_card']
-				game['taker'] = game['active_player']
-	# Current top is not trump (must be lead)
+		if card['suit'] == game['trump']:
+			# Played card value beats top value
+			if card['value'] > game['top_card']['value']:
+				return True
+	# Current top is not trump
 	else:
 		# Played card is trump
-		if game['played_card']['suit'] == game['trump']:
-			print('>>> Player {} sets new top card'.format(game['active_player']))
-			# Set new top & taker
-			game['top_card'] = game['played_card']
-			game['taker'] = game['active_player']
+		if card['suit'] == game['trump']:
+			return True
 		# Played card is lead suit
-		elif game['played_card']['suit'] == game['lead_suit']:
+		elif card['suit'] == game['lead_suit']:
 			# Played card value beats top value
-			if game['played_card']['value'] > game['top_card']['value']:
-				print('>>> Player {} sets new top card'.format(game['active_player']))
-				# Set new top & taker
-				game['top_card'] = game['played_card']
-				game['taker'] = game['active_player']
+			if card['value'] > game['top_card']['value']:
+				return True
 
-# End the turn
-def end_turn(game):
-	print('>>> all turns completed')
-
-	# Taker takes trick
-	print('>>> Player {} takes the trick'.format(game['taker']))
-	game['log'] += '<p><b>Player {}</b> takes the trick.</p>'.format(game['taker']+1)
-
-	game['round_over'] = True
-	game['bottom'] = adv_button
+	# Played card does not beat current top
+	return False
 
 # End the round, score hands and prepare for new hand if necessary
 def end_round(game):
-	print('>>> ROUND {} OVER: COLLECTING TRICK'.format(game['round']))
+	print('>>> Round {} over, collecting trick'.format(game['round']))
 
 	# Collect trick for taker
 	for card in range(game['num_players']):
-		push_back(game['tricks'][game['taker']], pop_back(game['middle_cards']))
+		# push_back(game['tricks'][game['players'][game['taker']]], pop_back(game['middle_cards']))
+		take_trick(game)
 
-	game['round_over'] = False
+	# Log trick taker
+	game['log'] += '<p><b>{}</b> takes the trick.</p>'.format(game['players'][game['taker']])
+
 	game['round'] += 1
-	print('>>> advancing to round {}'.format(game['round']))
+	print('>>> Advancing to round {}'.format(game['round']))
 	game['turn'] = -1
 	game['active_player'] = game['taker']
-
-	# If bot will lead next round, show adv_button
-	if game['active_player'] != 0:
-		game['bottom'] = adv_button
 
 	# Last round of the hand
 	if game['round'] >= game['hand_size']:
 		# Score hands
-		print('>>> SCORING HANDS')
+		print('>>> Scoring hands')
 		game['log'] += score_hands(game)
 
 		# Prepare for a new hand
-		game['bottom'] = adv_button
 		game['hands_dealt'] = False
 		game['trump_set'] = False
 		game['round'] = -1
@@ -459,6 +414,8 @@ def prepare_hands(game, client):
 
 # Prepare middle cards for display
 def prepare_middle(game, client):
+	middle = []
+
 	# If in bidding round
 	if game['round'] == -1:
 		# If this user is the current bidder
@@ -476,4 +433,6 @@ def prepare_middle(game, client):
 				card_class = 'trump'
 			else:
 				card_class = ''
-			game['middle'] += card_html.format(card_class, card['suit'], card['value'])
+			middle.append(card_html.format(card_class, card['suit'], card['value']))
+
+		return middle
