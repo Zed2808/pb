@@ -414,7 +414,7 @@ def prepare_hands(game, client):
 
 # Prepare middle cards for display
 def prepare_middle(game, client):
-	middle = []
+	middle = ''
 
 	# If in bidding round
 	if game['round'] == -1:
@@ -433,6 +433,6 @@ def prepare_middle(game, client):
 				card_class = 'trump'
 			else:
 				card_class = ''
-			middle.append(card_html.format(card_class, card['suit'], card['value']))
+			middle += card_html.format(card_class, card['suit'], card['value'])
 
 		return middle
