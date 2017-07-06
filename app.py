@@ -133,6 +133,21 @@ def card_picked(msg):
 
 	# If end of round
 	if game['turn'] >= game['num_players']:
+		# Log trick taker
+		game['log'] += '<p><b>{}</b> takes the trick.</p>'.format(game['players'][game['taker']])
+
+		# Emit game update
+		for player in game['players']:
+			emit('update',
+				{'hands': prepare_hands(game, player),
+				 'top_name': next_player(game, player),
+				 'bottom_name': player,
+				 'middle': prepare_middle(game, player),
+				 'bottom': game['bottom'],
+				 'log': game['log']},
+				 room=players[player])
+
+		sleep(3)
 		end_round(game)
 
 	# Emit game update

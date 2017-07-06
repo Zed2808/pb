@@ -62,6 +62,12 @@ def remove_card(deck, index):
 	del deck['cards'][index]
 	return card
 
+# Copy all the cards from the middle to the trick-taker's pile
+def collect_trick(game):
+	# Take one card for each player in the game
+	for card in range(game['num_players']):
+		push_back(game['tricks'][game['players'][game['taker']]], pop_back(game['middle_cards']))
+
 # Sort deck (trump, then lead, then others)
 def sort_deck(deck, game):
 	# Create list of empty lists, one for each suit
