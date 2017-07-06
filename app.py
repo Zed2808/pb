@@ -109,17 +109,16 @@ def card_picked(msg):
 
 	# If end of round
 	if game['turn'] >= game['num_players']:
-		# Log trick taker
-		game['log'] += '<p><b>{}</b> takes the trick.</p>'.format(game['players'][game['taker']])
-
-		# Emit game update
+		# End round
+		end_round(game)
 		emit_update(game)
 
 		sleep(3)
-		end_round(game)
 
-	# Emit game update
-	emit_update(game)
+		# Taker collects trick
+		collect_trick(game)
+		print('>>> {} takes the trick'.format(game['players'][game['taker']]))
+		emit_update(game)
 
 def emit_update(game):
 	for player in game['players']:

@@ -244,9 +244,8 @@ def new_top(game, card):
 
 # End the round, score hands and prepare for new hand if necessary
 def end_round(game):
-	# Taker collects trick
-	collect_trick(game)
-	print('>>> {} takes the trick'.format(game['players'][game['taker']]))
+	# Log trick taker
+	game['log'] += '<p><b>{}</b> takes the trick.</p>'.format(game['players'][game['taker']])
 
 	game['round'] += 1
 	print('>>> Advancing to round {}'.format(game['round']))
