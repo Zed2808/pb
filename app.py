@@ -82,15 +82,7 @@ def deal(msg):
 		deal_hands(game)
 
 	# Emit game update showing each player their hands
-	for player in game['players']:
-		emit('update',
-			{'hands': prepare_hands(game, player),
-			 'top_name': next_player(game, player),
-			 'bottom_name': player,
-			 'middle': prepare_middle(game, player),
-			 'bottom': game['bottom'],
-			 'log': game['log']},
-			 room=players[player])
+	emit_update(game)
 
 @socketio.on('bid')
 def bid(msg):
@@ -99,15 +91,7 @@ def bid(msg):
 
 	bidding_round(game, bid)
 
-	for player in game['players']:
-		emit('update',
-			{'hands': prepare_hands(game, player),
-			 'top_name': next_player(game, player),
-			 'bottom_name': player,
-			 'middle': prepare_middle(game, player),
-			 'bottom': game['bottom'],
-			 'log': game['log']},
-			 room=players[player])
+	emit_update(game)
 
 @socketio.on('card_picked')
 def card_picked(msg):
@@ -121,15 +105,7 @@ def card_picked(msg):
 	play_card(game, card_number)
 
 	# Emit game update
-	for player in game['players']:
-		emit('update',
-			{'hands': prepare_hands(game, player),
-			 'top_name': next_player(game, player),
-			 'bottom_name': player,
-			 'middle': prepare_middle(game, player),
-			 'bottom': game['bottom'],
-			 'log': game['log']},
-			 room=players[player])
+	emit_update(game)
 
 	# If end of round
 	if game['turn'] >= game['num_players']:
@@ -137,48 +113,15 @@ def card_picked(msg):
 		game['log'] += '<p><b>{}</b> takes the trick.</p>'.format(game['players'][game['taker']])
 
 		# Emit game update
-		for player in game['players']:
-			emit('update',
-				{'hands': prepare_hands(game, player),
-				 'top_name': next_player(game, player),
-				 'bottom_name': player,
-				 'middle': prepare_middle(game, player),
-				 'bottom': game['bottom'],
-				 'log': game['log']},
-				 room=players[player])
+		emit_update(game)
 
 		sleep(3)
 		end_round(game)
 
 	# Emit game update
-	for player in game['players']:
-		emit('update',
-			{'hands': prepare_hands(game, player),
-			 'top_name': next_player(game, player),
-			 'bottom_name': player,
-			 'middle': prepare_middle(game, player),
-			 'bottom': game['bottom'],
-			 'log': game['log']},
-			 room=players[player])
+	emit_update(game)
 
-@socketio.on('action')
-def do_action(msg):
-	# Active player plays a card
-	play_card(game)
-
-	# Round is over: collect the tricks and prepare a new round
-	if game['round_over']:
-		end_round(game)
-
-	# Prepare for next turn
-	game['turn'] += 1
-
-	# Last turn completed
-	if game['turn'] >= game['num_players']:
-		end_turn(game)
-
-	print('>>> END OF TURN')
-
+def emit_update(game):
 	for player in game['players']:
 		emit('update',
 			{'hands': prepare_hands(game, player),
