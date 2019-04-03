@@ -1,4 +1,4 @@
 class PB:
-	@staticmethod
-	def action(game):
-		return 0
+    @staticmethod
+    def action(game):
+        return 0
